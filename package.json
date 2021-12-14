@@ -1,0 +1,25 @@
+{
+  "name": "parrot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khlam/parrot.git"
+  },
+  "author": "KHL",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/khlam/parrot/issues"
+  },
+  "homepage": "https://github.com/khlam/parrot",
+  "dependencies": {
+    "@discordjs/builders": "^0.9.0",
+    "@discordjs/rest": "^0.1.0-canary.0",
+    "discord-api-types": "^0.25.2",
+    "discord.js": "^13.3.1"
+  }
+}
