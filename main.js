@@ -41,7 +41,7 @@ async function execute(cmd, msg){
 
         cmd = cmd[cmd.length - 1]
 
-        if ((cmd_header === "p") || (cmd_header === "play")) {
+        if ((cmd_header === "p") || (cmd_header === "play")) { // play a song
             let _ytObj = await yt.get_youtube_obj(cmd)
             if (_ytObj !== false) {
                 try{
@@ -57,17 +57,20 @@ async function execute(cmd, msg){
             }else {
                 msg.reply(`ERROR: Failed to parse URL.`)
             }
-        }else if ( (cmd_header === "s") || cmd_header === "skip") {
+
+        }else if ( (cmd_header === "s") || cmd_header === "skip") { // skip a song
             music.skip({
                 interaction: msg
             })
-        }else if ( (cmd_header === "l") || cmd_header === "leave" || cmd_header === "stop") {
+
+        }else if ( (cmd_header === "l") || cmd_header === "leave" || cmd_header === "stop") { // stop playing and leave
             try{
                 music.stop({
                     interaction: msg
                 })
             } catch(e){}
         }
+        
         resolve(result)
     })
 }
