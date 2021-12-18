@@ -3,7 +3,7 @@ const { Client, Intents } = require('discord.js')
 const s = require('./src/sanitizer')
 const voice = require('./src/voice')
 const music = require('./src/music')
-const yt = require('./src/ytplayer')
+const yt = require('./src/yt_obj')
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS,
     Intents.FLAGS.GUILD_MESSAGES, // read messages
@@ -17,7 +17,21 @@ let command = null
 let voice_connection
 let voice_channel
 
+let cmd_channel
+
 let guild_id
+/*
+music.event.on("playSong", (channel, musicObj, user) => {
+    channel.send(`a: *${musicObj.title}*\t \`${musicObj.duration}\``)
+})*/
+
+music.event.on("addSong", (channel, musicObj, user) => {
+    channel.send(`b: *${musicObj.title}*\t \`${musicObj.duration}\``)
+})
+
+music.event.on("addList", (channel, musicObj, user) => {
+    channel.send(`c: *${musicObj.title}*\t \`${musicObj.duration}\``)
+})
 
 async function connect_to_voice(msg) {
     voice_channel = msg.member.voice.channel
@@ -44,14 +58,18 @@ async function execute(cmd, msg){
 
         if ((cmd_header === "p") || (cmd_header === "play")) {
             let _ytObj = await yt.get_youtube_obj(cmd)
-            console.log("here")
             if (_ytObj !== false) {
-                music.play({
-                    interaction: msg,
-                    channel: msg.member.voice.channel,
-                    song: _ytObj.address
-                })
-                msg.channel.send(`*${_ytObj.name}*\t \`${_ytObj.length}\``)
+                try{
+                    music.play({
+                        interaction: msg,
+                        channel: msg.member.voice.channel,
+                        songObj: _ytObj,
+                    })
+                } catch(e) {
+                    msg.channel.send(`ERROR: Failed to parse URL.`)
+                }
+            }else {
+                msg.reply(`ERROR: Failed to parse URL.`)
             }
         }else if ( (cmd_header === "s") || cmd_header === "skip") {
             music.skip({

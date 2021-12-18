@@ -10,9 +10,8 @@ module.exports.event = event;
 
 exports.play = async (options = {}) => {
 
-    const { interaction, channel, song } = options;
+    const { interaction, channel, songObj} = options;
     if(!channel || channel?.type !== 'GUILD_VOICE') throw new Error(`INVALID_VOICE_CHANNEL: There is no valid VoiceChannel provided.`);
-    if(!song || typeof song !== 'string') throw new Error(`INVALID_MUSIC_URL: There is no valid Music URL provided.`);
     if(!interaction) throw new Error(`INVALID_INTERACTION: There is no valid CommandInteraction provided.`)
 
     const data = activeSongs.get(channel.guild.id) || {};
@@ -31,65 +30,23 @@ exports.play = async (options = {}) => {
     data.guildId = channel.guild.id;
 
     let queueSongInfo;
-    const songInfo = (await yts(song)).all.filter(ch => ch.type === 'video' || ch.type === 'list')[0];
-    if(!songInfo) throw new Error(`NO_SONG: There was no song found with the name/URL '${song}'.`);
-    if(songInfo.type === 'list') {
-        const playlistSongs = (await yts({ listId: songInfo.listId }));
-
-        for(const video of playlistSongs.videos) {
-            const ytdlSongInfo = await ytdl.getInfo(video.videoId);
-
-            queueSongInfo = {
-                title: video.title,
-                description: ytdlSongInfo.videoDetails.description,
-                duration: video.duration.duration,
-                views: ytdlSongInfo.videoDetails.viewCount,
-                author: video.author.name,
-                url: ytdlSongInfo.videoDetails.video_url,
-                thumbnail: video.thumbnail,
-                likes: ytdlSongInfo.videoDetails.likes,
-                dislikes: ytdlSongInfo.videoDetails.dislikes,
-                extra: {
-                    type: 'playlist',
-                    playlist: playlistSongs
-                }
-            };
-
-            await data.queue.push({
-                info: queueSongInfo,
-                requester: interaction.user,
-                url: ytdlSongInfo.videoDetails.video_url,
-                channel: interaction.channel
-            });
-
-        };
-    } else {
-
-        const ytdlSongInfo = await ytdl.getInfo(songInfo.url);
-
-        queueSongInfo = {
-            title: songInfo.title,
-            description: songInfo.description,
-            duration: songInfo.timestamp,
-            views: songInfo.views,
-            author: songInfo.author.name,
-            url: songInfo.url,
-            thumbnail: songInfo.thumbnail,
-            likes: ytdlSongInfo.videoDetails.likes,
-            dislikes: ytdlSongInfo.videoDetails.dislikes,
-            extra: {
-                type: 'video',
-                playlist: null
-            }
-        };
-
-        await data.queue.push({
-            info: queueSongInfo,
-            requester: interaction.user,
-            url: songInfo.url,
-            channel: interaction.channel
-        });
+    
+    queueSongInfo = {
+        title: songObj.name,
+        duration: songObj.length,
+        url: songObj.address,
+        extra: {
+            type: 'video',
+            playlist: null
+        }
     };
+
+    await data.queue.push({
+        info: queueSongInfo,
+        requester: interaction.user,
+        url: songObj.address,
+        channel: interaction.channel
+    });
 
     if(!data.dispatcher) {
 
