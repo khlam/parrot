@@ -1,7 +1,6 @@
 // src: https://www.npmjs.com/package/@koenie06/discord.js-music?activeTab=readme
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, StreamType, entersState, VoiceConnectionStatus, AudioPlayerStatus } = require('@discordjs/voice');
 const ytdl = require('ytdl-core');
-const yts = require('yt-search');
 const eventEmitter = require('events');
 const activeSongs = new Map();
 const event = new eventEmitter();

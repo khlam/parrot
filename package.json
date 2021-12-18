@@ -24,7 +24,6 @@
     "libsodium-wrappers": "^0.7.9",
     "discord-api-types": "^0.25.2",
     "discord.js": "^13.3.1",
-    "yt-search": "^2.10.2",
     "ytdl-core": "^4.9.2"
   }
 }
