@@ -62,7 +62,7 @@ exports.play = async (options = {}) => {
     };
 
     activeSongs.set(channel.guild.id, data);
-
+    return data.queue.length
 };
 
 exports.isConnected = async (options = {}) => {

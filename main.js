@@ -16,22 +16,7 @@ let command = null
 
 let voice_connection
 let voice_channel
-
-let cmd_channel
-
 let guild_id
-/*
-music.event.on("playSong", (channel, musicObj, user) => {
-    channel.send(`a: *${musicObj.title}*\t \`${musicObj.duration}\``)
-})*/
-
-music.event.on("addSong", (channel, musicObj, user) => {
-    channel.send(`b: *${musicObj.title}*\t \`${musicObj.duration}\``)
-})
-
-music.event.on("addList", (channel, musicObj, user) => {
-    channel.send(`c: *${musicObj.title}*\t \`${musicObj.duration}\``)
-})
 
 async function connect_to_voice(msg) {
     voice_channel = msg.member.voice.channel
@@ -60,13 +45,12 @@ async function execute(cmd, msg){
             let _ytObj = await yt.get_youtube_obj(cmd)
             if (_ytObj !== false) {
                 try{
-                    await music.play({
+                    let queue_len = await music.play({
                         interaction: msg,
                         channel: msg.member.voice.channel,
                         songObj: _ytObj,
                     })
-                    await music.getQueue({ interaction: msg })
-
+                    msg.channel.send(`**#${queue_len}** \t *${_ytObj.name}*\t \`${_ytObj.length}\``)
                 } catch(e) {
                     msg.channel.send(`ERROR: Failed to parse URL.`)
                 }
@@ -96,8 +80,7 @@ client.once('ready', () => {
 
 client.on("messageCreate", async (msg) => {
     if (msg.content.startsWith(prefix)) {
-        console.log("o > '", msg.content, "'")
-        
+
         command = msg.content
         
         console.log("s > '", command, "'")
