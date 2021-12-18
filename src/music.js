@@ -82,14 +82,17 @@ exports.stop = async (options = {}) => {
     const { interaction } = options;
     if(!interaction) throw new Error(`INVALID_INTERACTION: There is no valid CommandInteraction provided.`)
 
-    if(!activeSongs.has(interaction.guild.id) || !activeSongs.get(interaction.guild.id)?.connection || !activeSongs.get(interaction.guild.id)?.player) throw new Error(`NO_MUSIC: There is no music playing in that server.`);
+    /*
+    if(!activeSongs.has(interaction.guild.id) || !activeSongs.get(interaction.guild.id)?.connection || !activeSongs.get(interaction.guild.id)?.player) {
+        return false
+    }*/
+    try{
+        const fetchedData = await activeSongs.get(interaction.guild.id);
 
-    const fetchedData = await activeSongs.get(interaction.guild.id);
-
-    fetchedData.player.stop();
-    fetchedData.connection.destroy();
-    activeSongs.delete(interaction.guild.id);
-
+        fetchedData.player.stop();
+        fetchedData.connection.destroy();
+        activeSongs.delete(interaction.guild.id);
+    }catch(e){}
 };
 
 exports.repeat = async(options = {}) => {

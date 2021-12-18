@@ -60,11 +60,13 @@ async function execute(cmd, msg){
             let _ytObj = await yt.get_youtube_obj(cmd)
             if (_ytObj !== false) {
                 try{
-                    music.play({
+                    await music.play({
                         interaction: msg,
                         channel: msg.member.voice.channel,
                         songObj: _ytObj,
                     })
+                    await music.getQueue({ interaction: msg })
+
                 } catch(e) {
                     msg.channel.send(`ERROR: Failed to parse URL.`)
                 }
@@ -75,6 +77,12 @@ async function execute(cmd, msg){
             music.skip({
                 interaction: msg
             })
+        }else if ( (cmd_header === "l") || cmd_header === "leave" || cmd_header === "stop") {
+            try{
+                music.stop({
+                    interaction: msg
+                })
+            } catch(e){}
         }
         resolve(result)
     })
