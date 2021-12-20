@@ -95,6 +95,7 @@ exports.stop = async (options = {}) => {
     }catch(e){}
 };
 
+/*
 exports.repeat = async(options = {}) => {
 
     const { interaction, value } = options;
@@ -111,7 +112,7 @@ exports.repeat = async(options = {}) => {
     fetchedData.repeat = value;
     activeSongs.set(interaction.guild.id, fetchedData);
 
-}
+}*/
 
 exports.isRepeated = async (options = {}) => {
 
@@ -131,31 +132,31 @@ exports.skip = async(options = {}) => {
     const { interaction } = options;
     if(!interaction) throw new Error(`INVALID_INTERACTION: There is no valid CommandInteraction provided.`)
 
-    if(!activeSongs.has(interaction.guild.id) || !activeSongs.get(interaction.guild.id)?.connection || !activeSongs.get(interaction.guild.id)?.player) throw new Error(`NO_MUSIC: There is no music playing in that server.`);
-
-    const fetchedData = await activeSongs.get(interaction.guild.id);
-    const player = await fetchedData.player;
-    const connection = await fetchedData.connection
-
-    const finishChannel = await fetchedData.queue[0].channel
-    await fetchedData.queue.shift();
-
-    if(fetchedData.queue.length > 0) {
-
-        activeSongs.set(interaction.guild.id, fetchedData);
-
-        playSong(fetchedData, interaction)
-
-    } else {
-
-        await event.emit('finish', finishChannel);
-        await activeSongs.delete(interaction.guild.id);
-
-        await player.stop();
-        await connection.destroy();
-
-    };
-
+    //if(!activeSongs.has(interaction.guild.id) || !activeSongs.get(interaction.guild.id)?.connection || !activeSongs.get(interaction.guild.id)?.player) throw new Error(`NO_MUSIC: There is no music playing in that server.`);
+    try {
+        const fetchedData = await activeSongs.get(interaction.guild.id);
+        const player = await fetchedData.player;
+        const connection = await fetchedData.connection
+    
+        const finishChannel = await fetchedData.queue[0].channel
+        await fetchedData.queue.shift();
+    
+        if(fetchedData.queue.length > 0) {
+    
+            activeSongs.set(interaction.guild.id, fetchedData);
+    
+            playSong(fetchedData, interaction)
+    
+        } else {
+    
+            await event.emit('finish', finishChannel);
+            await activeSongs.delete(interaction.guild.id);
+    
+            await player.stop();
+            await connection.destroy();
+    
+        };
+    } catch(e) {}
 };
 
 exports.pause = async (options = {}) => {

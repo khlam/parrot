@@ -44,7 +44,7 @@ async function execute(cmd, msg){
         if ((cmd_header === "p") || (cmd_header === "play")) { // play a song
             let _ytObj = await yt.get_youtube_obj(cmd)
             if (_ytObj !== false) {
-                try{
+                try {
                     let queue_len = await music.play({
                         interaction: msg,
                         channel: msg.member.voice.channel,
@@ -52,10 +52,10 @@ async function execute(cmd, msg){
                     })
                     msg.channel.send(`**#${queue_len}** \t *${_ytObj.name}*\t \`${_ytObj.length}\``)
                 } catch(e) {
-                    msg.channel.send(`ERROR: Failed to parse URL.`)
+                    msg.reply(`ERROR: Failed to Join Requestor Voice Channel`)
                 }
             }else {
-                msg.reply(`ERROR: Failed to parse URL.`)
+                msg.reply(`ERROR: Invalid Youtube URL`)
             }
 
         }else if ( (cmd_header === "s") || cmd_header === "skip") { // skip a song
