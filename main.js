@@ -1,103 +1,105 @@
-const { Client, Intents } = require('discord.js')
+const { Client, Intents, Constants } = require('discord.js')
 
-const s = require('./src/sanitizer')
-const voice = require('./src/voice')
 const music = require('./src/music')
 const yt = require('./src/yt_obj')
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS,
-    Intents.FLAGS.GUILD_MESSAGES, // read messages
-    Intents.FLAGS.GUILD_VOICE_STATES // voice connection
-] })
-
-const prefix = "-"
-
-let command = null
-
-let voice_connection
-let voice_channel
-let guild_id
-
-async function connect_to_voice(msg) {
-    voice_channel = msg.member.voice.channel
-    guild_id = voice_channel.guild.id
-    if (voice_channel) {
-        voice_connection = await voice.connect_to_channel(msg.member.voice.channel)
-        if (voice_connection) {
-            console.log("Joined Voice Channel", voice_channel.name, guild_id)
-        }else {
-            msg.reply("ERROR: Could not connect to voice channel.")
-        }
-    }
-}
-
-async function execute(cmd, msg){
-    return new Promise(async(resolve, reject) => {
-        let result = false
-        
-        cmd = cmd.split(" ")
-
-        cmd_header = cmd[0].replace(prefix, "")
-
-        cmd = cmd[cmd.length - 1]
-
-        if ((cmd_header === "p") || (cmd_header === "play")) { // play a song
-            let _ytObj = await yt.get_youtube_obj(cmd)
-            if (_ytObj !== false) {
-                try {
-                    let queue_len = await music.play({
-                        interaction: msg,
-                        channel: msg.member.voice.channel,
-                        songObj: _ytObj,
-                    })
-                    msg.channel.send(`**#${queue_len}** \t *${_ytObj.name}*\t \`${_ytObj.length}\``)
-                } catch(e) {
-                    msg.reply(`ERROR: Failed to Join Requestor Voice Channel`)
-                }
-            }else {
-                msg.reply(`ERROR: Invalid Youtube URL`)
-            }
-
-        }else if ( (cmd_header === "s") || cmd_header === "skip") { // skip a song
-            music.skip({
-                interaction: msg
-            })
-
-        }else if ( (cmd_header === "l") || cmd_header === "leave" || cmd_header === "stop") { // stop playing and leave
-            try{
-                music.stop({
-                    interaction: msg
-                })
-            } catch(e){}
-        }
-        
-        resolve(result)
-    })
-}
-
-client.login(process.env.TOKEN)
+const client = new Client({
+    intents: [
+        Intents.FLAGS.GUILDS,
+        Intents.FLAGS.GUILD_VOICE_STATES // voice connection
+    ]
+})
 
 client.once('ready', () => {
-	console.log('Ready!')
-})
+    const _all_guilds = client.guilds.cache.map(guild => guild.id)
+    if (_all_guilds.length === 1) {
+        const guild_id = _all_guilds[0]
+        const guild = client.guilds.cache.get(guild_id)
+        let commands
 
-client.on("messageCreate", async (msg) => {
-    if (msg.content.startsWith(prefix)) {
+        console.log("Bot is now ready for guild", guild_id)
 
-        command = msg.content
-        
-        console.log("s > '", command, "'")
-        
-        await execute(command, msg)
-        
-        command = null
-        msg = null
+        if (guild) {
+            commands = guild.commands
+        }else {
+            commands = client.application?.commands // global
+        }
+
+        commands?.create({
+            name: 'play',
+            description: 'Play audio from a YouTube video.',
+            options: [
+                {
+                    name: 'url',
+                    description: 'URL of YouTube video to be played',
+                    required: true,
+                    type: Constants.ApplicationCommandOptionTypes.STRING
+                }
+            ]
+        })
+
+        commands?.create({
+            name: 'skip',
+            description: 'Skip currently playing.'
+        })
+
+        commands?.create({
+            name: 'leave',
+            description: 'Tells bot to leave the voice channel.'
+        })
+
     }else {
-        msg = null
-        command = null
-        return
+        console.log("ERROR: Bot has not been added to a guild or belongs to more than 1 guild. System is not tested for serving multiple discord servers.")
+        process.exit()
     }
 })
+
+client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isCommand()) {
+        return
+    }
+    const {commandName, options} = interaction
+
+    if (commandName === "play") {
+        let _ytObj = await yt.get_youtube_obj(options.getString('url'))
+
+        if (_ytObj !== false) {
+            try {
+                let queue_len = await music.play({
+                    interaction: interaction,
+                    channel: interaction.member.voice.channel,
+                    songObj: _ytObj,
+                })
+                interaction.reply(`**#${queue_len}** \t *${_ytObj.name}*\t \`${_ytObj.length}\` \t [Link (YouTube) 🔗](${_ytObj.address})`)
+            } catch(e) {
+                interaction.reply({content: `ERROR: Failed to Join Requestor Voice Channel`})
+            }
+        }else {
+            interaction.reply({content: `ERROR: Invalid Youtube URL`})
+        }
+    }
+
+    else if (commandName === "skip") {
+        await interaction.reply({content: `200`});
+        await interaction.deleteReply();
+        music.skip({
+            interaction: interaction
+        })
+    }
+    
+    else if (commandName === "leave") {
+        try{
+            await interaction.reply({content: `200`});
+            await interaction.deleteReply();
+            music.stop({
+                interaction: interaction
+            })
+        } catch(e){}
+    }
+
+})
+
+client.login(process.env.TOKEN)
 
 process.once('SIGTERM', function () {
     console.log('SIGTERM. Shutting down.')
