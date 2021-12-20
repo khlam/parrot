@@ -283,7 +283,7 @@ exports.volume = async (options = {}) => {
 
 async function playSong(data, interaction) {
 
-    let resource = await createAudioResource(ytdl(data.queue[0].url, { filter: 'audioonly' }), { 
+    let resource = await createAudioResource(ytdl(data.queue[0].url, { filter: 'audioonly', highWaterMark: 1<<25}), { 
         inputType: StreamType.Arbitrary,
         inlineVolume: true
     });
