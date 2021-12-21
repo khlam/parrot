@@ -92,7 +92,11 @@ exports.stop = async (options = {}) => {
         fetchedData.player.stop();
         fetchedData.connection.destroy();
         activeSongs.delete(interaction.guild.id);
-    }catch(e){}
+
+        console.log("LEAVING VOICE CHANNEL")
+    }catch(e){
+        console.log("FAILED TO LEAVE VOICE", e)
+    }
 };
 
 /*
@@ -139,8 +143,11 @@ exports.skip = async(options = {}) => {
         const connection = await fetchedData.connection
     
         const finishChannel = await fetchedData.queue[0].channel
+
+        console.log("SKIP: ", fetchedData.queue[0].info)
+
         await fetchedData.queue.shift();
-    
+        
         if(fetchedData.queue.length > 0) {
     
             activeSongs.set(interaction.guild.id, fetchedData);
@@ -304,6 +311,8 @@ async function playSong(data, interaction) {
     } else {
         event.emit('playSong', data.queue[0].channel, data.queue[0].info, data.queue[0].requester);
     }
+
+    console.log("NOW PLAYING: ", data.queue[0].info)
 
     player.on(AudioPlayerStatus.Idle, async () => {
 

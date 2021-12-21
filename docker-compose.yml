@@ -5,12 +5,10 @@ services:
     container_name: parrot
     build:
         context: .
-        dockerfile: Dockerfile-dev
+        target: dev
     volumes:
       - .:/app/
       - /app/node_modules
-      - /app/models
     environment:
         TOKEN: ${TOKEN}
         GSHEET: ${GSHEET}
-    command: bash -c "nodemon -L main.js"
