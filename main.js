@@ -58,6 +58,7 @@ client.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) {
         return
     }
+    
     const {commandName, options} = interaction
 
     if (commandName === "play") {
