@@ -1,0 +1,11 @@
+version: "3.3"
+
+services:
+  bot:
+    container_name: fsp2-i
+    build:
+        context: .
+    volumes:
+      - .:/app/
+      - ./output/:/tmp/
+    command: bash -c "python3 synthesize.py"
