@@ -80,13 +80,21 @@ client.on('interactionCreate', async (interaction) => {
 
         if (_ytObj !== false) {
             try {
-                let queue_len = await music.play({
+
+                let play_result =  await music.play({
                     interaction: interaction,
                     channel: interaction.member.voice.channel,
                     songObj: _ytObj,
                 })
-                interaction.reply(`**#${queue_len}** \t *${_ytObj.name}*\t \`${_ytObj.length}\` \t [Link (YouTube) 🔗](${_ytObj.address})`)
+        
+                if (play_result.err === null) {
+                    await interaction.reply({
+                        content: `**#${play_result.queue_len}** \t *${_ytObj.name}*\t \`${_ytObj.length}\` \t [Link (YouTube) 🔗](${_ytObj.address})`
+                    })
+                }
+
             } catch(e) {
+                console.log(e)
                 interaction.reply({content: `ERROR: Failed to Join Requestor Voice Channel`})
             }
         }else {
@@ -137,15 +145,21 @@ client.on('interactionCreate', async (interaction) => {
             address: res.attachments.values().next().value['url'] // url of wav file we just uploaded
         }
 
-        let queue_len =  await music.play({
+        let play_result =  await music.play({
             interaction: interaction,
             channel: interaction.member.voice.channel,
             songObj: ttsObj,
         })
 
-        await interaction.editReply({
-            content: `**#${queue_len}** \t *${ttsObj.name}*\t \t [Link (Discord) 🔗](${ttsObj.address})`
-        })
+        if (play_result.err === null) {
+            await interaction.editReply({
+                content: `**#${play_result.queue_len}** \t *${ttsObj.name}*\t \t [Link (Discord) 🔗](${ttsObj.address})`
+            })
+        }else {
+            await interaction.editReply({
+                content: `${play_result.err}`
+            })
+        }
     }
 
 })

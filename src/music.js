@@ -11,8 +11,13 @@ module.exports.event = event;
 exports.play = async (options = {}) => {
 
     const { interaction, channel, songObj} = options;
-    if(!channel || channel?.type !== 'GUILD_VOICE') throw new Error(`INVALID_VOICE_CHANNEL: There is no valid VoiceChannel provided.`);
-    if(!interaction) throw new Error(`INVALID_INTERACTION: There is no valid CommandInteraction provided.`)
+    if(!channel || channel?.type !== 'GUILD_VOICE') {
+        return {queue_len: 0, err: "ERROR: Failed to join Requestor Voice Channel"}
+    }
+
+    if(!interaction) {
+        return {queue_len: 0, err: "ERROR: Interaction error"}
+    }
 
     const data = activeSongs.get(channel.guild.id) || {};
 
@@ -64,7 +69,7 @@ exports.play = async (options = {}) => {
     };
 
     activeSongs.set(channel.guild.id, data);
-    return data.queue.length
+    return {queue_len: data.queue.length, err: null}
 };
 
 exports.isConnected = async (options = {}) => {
