@@ -115,7 +115,7 @@ client.on('interactionCreate', async (interaction) => {
     else if (commandName === "speak") {
         const text = options.getString('text')
         
-        console.log("STARTING TTS INF ON TEXT: ", text)
+        console.log("STARTING TTS INFERENCE ON TEXT: ", text)
 
         await interaction.deferReply({})
 
@@ -142,8 +142,9 @@ client.on('interactionCreate', async (interaction) => {
             channel: interaction.member.voice.channel,
             songObj: ttsObj,
         })
+
         await interaction.editReply({
-            content:  `**#${queue_len}** \t *${ttsObj.name}*\t \t [Link (Discord) 🔗](${ttsObj.address})`
+            content: `**#${queue_len}** \t *${ttsObj.name}*\t \t [Link (Discord) 🔗](${ttsObj.address})`
         })
     }
 
