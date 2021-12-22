@@ -6,3 +6,5 @@ doc/
 .github/
 .env
 README.md
+__pycache__/
+*.pth.tar

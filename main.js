@@ -2,6 +2,7 @@ const { Client, Intents, Constants } = require('discord.js')
 
 const music = require('./src/music')
 const yt = require('./src/yt_obj')
+const python = require('./src/python')
 
 const client = new Client({
     intents: [
@@ -46,6 +47,19 @@ client.once('ready', () => {
         commands?.create({
             name: 'leave',
             description: 'Tells bot to leave the voice channel.'
+        })
+
+        commands?.create({
+            name: 'speak',
+            description: 'Call FastSpeech2 Model to Transcribe TTS.',
+            options: [
+                {
+                    name: 'text',
+                    description: 'Text to be transcribed',
+                    required: true,
+                    type: Constants.ApplicationCommandOptionTypes.STRING
+                }
+            ]
         })
 
     }else {
@@ -96,6 +110,42 @@ client.on('interactionCreate', async (interaction) => {
                 interaction: interaction
             })
         } catch(e){}
+    }
+
+    else if (commandName === "speak") {
+        const text = options.getString('text')
+        
+        console.log("STARTING TTS INFERENCE ON TEXT: ", text)
+
+        await interaction.deferReply({})
+
+        console.time('inference')
+        
+        await python.fastspeech2(text) // call inference on tts
+
+        console.timeEnd('inference')
+
+        const res = await interaction.editReply({ // upload wav file to discord and get url of file
+            content: `working...`,
+            files: ["/tmp/out.wav"] 
+        })
+        
+        ttsObj = {
+            name: text,
+            length: "00:00:00",
+            type: "file",
+            address: res.attachments.values().next().value['url'] // url of wav file we just uploaded
+        }
+
+        let queue_len =  await music.play({
+            interaction: interaction,
+            channel: interaction.member.voice.channel,
+            songObj: ttsObj,
+        })
+
+        await interaction.editReply({
+            content: `**#${queue_len}** \t *${ttsObj.name}*\t \t [Link (Discord) 🔗](${ttsObj.address})`
+        })
     }
 
 })
