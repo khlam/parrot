@@ -27,6 +27,7 @@ class FastSpeech2(nn.Module):
         self.postnet = PostNet()
 
         self.speaker_emb = None
+        '''
         if model_config["multi_speaker"]:
             with open(
                 os.path.join(
@@ -38,7 +39,7 @@ class FastSpeech2(nn.Module):
             self.speaker_emb = nn.Embedding(
                 n_speaker,
                 model_config["transformer"]["encoder_hidden"],
-            )
+            )'''
 
     def forward(
         self,

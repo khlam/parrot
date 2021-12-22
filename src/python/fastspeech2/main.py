@@ -12,10 +12,13 @@ from utils.model import get_model, get_vocoder
 from utils.tools import to_device, synth_samples
 from text import text_to_sequence
 
+import pickle
+
 #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = torch.device("cpu")
 
 def read_lexicon(lex_path):
+    '''
     lexicon = {}
     with open(lex_path) as f:
         for line in f:
@@ -24,7 +27,9 @@ def read_lexicon(lex_path):
             phones = temp[1:]
             if word.lower() not in lexicon:
                 lexicon[word.lower()] = phones
-    return lexicon
+    #pickle.dump(lexicon, open( "/app/src/python/fastspeech2/lexicon/lexicon.p", "wb" ) )
+    return lexicon'''
+    return pickle.load( open( "/app/src/python/fastspeech2/lexicon/lexicon.p", "rb" ) )
 
 
 def preprocess_english(text, preprocess_config):

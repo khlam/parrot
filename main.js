@@ -115,9 +115,10 @@ client.on('interactionCreate', async (interaction) => {
 
     else if (commandName === "speak") {
         await interaction.deferReply({})
-
+        console.time('inference')
         await python.fastspeech2(options.getString('text'))
-        
+        console.timeEnd('inference')
+
         interaction.editReply({
             content: `${options.getString('text')}`
         })
