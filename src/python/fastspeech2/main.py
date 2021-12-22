@@ -108,9 +108,9 @@ if __name__ == "__main__":
 
         path:
             corpus_path: "/home/ming/Data/LJSpeech-1.1"
-            lexicon_path: "lexicon/librispeech-lexicon.txt"
+            lexicon_path: "/app/src/python/fastspeech2/lexicon/librispeech-lexicon.txt"
             raw_path: "./raw_data/LJSpeech"
-            preprocessed_path: "./preprocessed_data/LJSpeech"
+            preprocessed_path: "/app/src/python/fastspeech2/preprocessed_data/LJSpeech"
 
         preprocessing:
             val_size: 512
@@ -172,8 +172,8 @@ if __name__ == "__main__":
     #train_config = yaml.load(open(args.train_config, "r"), Loader=yaml.FullLoader)
     train_config = yaml.safe_load('''
     path:
-        ckpt_path: "./output/ckpt/LJSpeech"
-        log_path: "./output/log/LJSpeech"
+        ckpt_path: "/app/src/python/fastspeech2/output/ckpt/LJSpeech"
+        log_path: "/app/src/python/fastspeech2/output/log/LJSpeech"
         result_path: "/tmp/"
     optimizer:
         batch_size: 16

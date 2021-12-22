@@ -2,6 +2,6 @@ inflect == 4.1.0
 g2p-en == 2.1.0
 numpy == 1.19.0
 PyYAML==5.4.1
-scipy == 1.5.0
-torch == 1.7.0
+scipy
+torch
 unidecode == 1.1.1

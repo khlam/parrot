@@ -1,12 +1,14 @@
-FROM python:3.8.12-alpine3.15 AS base
-RUN apk add --update --no-cache ffmpeg nodejs npm
+FROM node:17-bullseye-slim AS base
+RUN apt-get update && apt-get install -y libpcap-dev libpq-dev g++ ffmpeg curl make python3.8-dev python3-pip
 WORKDIR /app
 COPY . /app
-RUN npm install
+RUN npm install -g node-gyp && npm install
+RUN pip3 install -r /app/src/python/fastspeech2/requirements.txt 
 
 FROM base AS dev
 RUN npm install -g nodemon
-CMD nodemon -L main.js
+#CMD python3 /app/src/python/fastspeech2/main.py
+#CMD nodemon -L main.js
 
 FROM base
 CMD node main.js
