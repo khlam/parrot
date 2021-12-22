@@ -13,5 +13,5 @@ services:
     environment:
         TOKEN: ${TOKEN}
         GSHEET: ${GSHEET}
-    command: bash -c "python3 /app/src/python/fastspeech2/main.py"
+    #command: bash -c "python3 /app/src/python/fastspeech2/main.py"
     #command: bash -c "nodemon -L main.js"

@@ -2,6 +2,8 @@ const { Client, Intents, Constants } = require('discord.js')
 
 const music = require('./src/music')
 const yt = require('./src/yt_obj')
+const python = require('./src/python')
+
 
 const client = new Client({
     intents: [
@@ -46,6 +48,19 @@ client.once('ready', () => {
         commands?.create({
             name: 'leave',
             description: 'Tells bot to leave the voice channel.'
+        })
+
+        commands?.create({
+            name: 'speak',
+            description: 'Call FastSpeech2 Model to Transcribe TTS.',
+            options: [
+                {
+                    name: 'text',
+                    description: 'Text to be transcribed',
+                    required: true,
+                    type: Constants.ApplicationCommandOptionTypes.STRING
+                }
+            ]
         })
 
     }else {
@@ -96,6 +111,16 @@ client.on('interactionCreate', async (interaction) => {
                 interaction: interaction
             })
         } catch(e){}
+    }
+
+    else if (commandName === "speak") {
+        await interaction.deferReply({})
+
+        await python.fastspeech2(options.getString('text'))
+        
+        interaction.editReply({
+            content: `${options.getString('text')}`
+        })
     }
 
 })

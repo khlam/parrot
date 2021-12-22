@@ -87,10 +87,8 @@ if __name__ == "__main__":
         default=None,
         help="raw text to synthesize, for single-sentence mode only",
     )
-
+    
     args = parser.parse_args()
-
-    args.text = "hey hey ho ho pee pee poo poo"
 
     args.restore_step = 900000
     args.mode = "single"
@@ -101,7 +99,7 @@ if __name__ == "__main__":
     args.duration_control = 1
 
     # Read Config
-    
+
     #preprocess_config = yaml.load(open(args.preprocess_config, "r"), Loader=yaml.FullLoader)
     preprocess_config = yaml.safe_load('''
         dataset: "LJSpeech"
