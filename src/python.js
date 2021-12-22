@@ -11,7 +11,7 @@ function fastspeech2(t) {
     }
       
     PythonShell.run('main.py', options, function (err, results) {
-        console.log("done", results)
+        console.log(">", results)
         return resolve(results)
     })
   })

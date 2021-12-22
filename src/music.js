@@ -4,6 +4,7 @@ const ytdl = require('ytdl-core');
 const eventEmitter = require('events');
 const activeSongs = new Map();
 const event = new eventEmitter();
+const { createReadStream } = require('fs')
 
 module.exports.event = event;
 
@@ -29,11 +30,12 @@ exports.play = async (options = {}) => {
     data.guildId = channel.guild.id;
 
     let queueSongInfo;
-    
+
     queueSongInfo = {
         title: songObj.name,
         duration: songObj.length,
         url: songObj.address,
+        type: songObj.type,
         extra: {
             type: 'video',
             playlist: null
@@ -289,11 +291,19 @@ exports.volume = async (options = {}) => {
 };
 
 async function playSong(data, interaction) {
-
-    let resource = await createAudioResource(ytdl(data.queue[0].url, { filter: 'audioonly', highWaterMark: 1<<25}), { 
-        inputType: StreamType.Arbitrary,
-        inlineVolume: true
-    });
+    let resource
+    if (data.queue[0].info.type === 'yt') {
+        resource = await createAudioResource(ytdl(data.queue[0].url, { filter: 'audioonly', highWaterMark: 1<<25}), { 
+            inputType: StreamType.Arbitrary,
+            inlineVolume: true
+        });
+    }else if (data.queue[0].info.type === 'file') {
+        resource = await createAudioResource(createReadStream("/tmp/out.wav"), { 
+            inputType: StreamType.Arbitrary,
+            inlineVolume: true
+        })
+    }
+    
 
     resource.volume.setVolume(0.4)
 

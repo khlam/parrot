@@ -4,7 +4,6 @@ const music = require('./src/music')
 const yt = require('./src/yt_obj')
 const python = require('./src/python')
 
-
 const client = new Client({
     intents: [
         Intents.FLAGS.GUILDS,
@@ -114,13 +113,37 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     else if (commandName === "speak") {
+        const text = options.getString('text')
+        
+        console.log("STARTING TTS INF ON TEXT: ", text)
+
         await interaction.deferReply({})
+
         console.time('inference')
-        await python.fastspeech2(options.getString('text'))
+        
+        await python.fastspeech2(text) // call inference on tts
+
         console.timeEnd('inference')
 
-        interaction.editReply({
-            content: `${options.getString('text')}`
+        const res = await interaction.editReply({ // upload wav file to discord and get url of file
+            content: `working...`,
+            files: ["/tmp/out.wav"] 
+        })
+        
+        ttsObj = {
+            name: text,
+            length: "00:00:00",
+            type: "file",
+            address: res.attachments.values().next().value['url'] // url of wav file we just uploaded
+        }
+
+        let queue_len =  await music.play({
+            interaction: interaction,
+            channel: interaction.member.voice.channel,
+            songObj: ttsObj,
+        })
+        await interaction.editReply({
+            content:  `**#${queue_len}** \t *${ttsObj.name}*\t \t [Link (Discord) 🔗](${ttsObj.address})`
         })
     }
 

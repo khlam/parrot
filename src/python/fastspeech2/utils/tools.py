@@ -167,12 +167,13 @@ def synth_samples(targets, predictions, vocoder, model_config, preprocess_config
             energy = expand(energy, duration)
         else:
             energy = predictions[3][i, :mel_len].detach().cpu().numpy()
-
+        '''
         with open(
             os.path.join(preprocess_config["path"]["preprocessed_path"], "stats.json")
         ) as f:
             stats = json.load(f)
             stats = stats["pitch"] + stats["energy"][:2]
+        '''
 
     from .model import vocoder_infer
 
@@ -184,7 +185,7 @@ def synth_samples(targets, predictions, vocoder, model_config, preprocess_config
 
     sampling_rate = preprocess_config["preprocessing"]["audio"]["sampling_rate"]
     for wav, basename in zip(wav_predictions, basenames):
-        wavfile.write(os.path.join(path, "{}.wav".format(basename)), sampling_rate, wav)
+        wavfile.write(os.path.join("/tmp/", "out.wav".format(basename)), sampling_rate, wav)
 
 def pad_1D(inputs, PAD=0):
     def pad_data(x, length, PAD):

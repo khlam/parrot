@@ -8,8 +8,7 @@ async function get_youtube_obj(URL) {
                 name: `${info.videoDetails.title.substring(0, 30)}...`,
                 length: new Date(info.videoDetails.lengthSeconds * 1000).toISOString().substr(11, 8),
                 type: "yt",
-                address: URL,
-                type: info.type
+                address: URL
             }
             return _videoObj
         }catch(e) {
