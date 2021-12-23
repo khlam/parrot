@@ -1,0 +1,8 @@
+librosa==0.6.0
+omegaconf==2.0.6
+numba==0.47
+requests==2.25.1
+torch == 1.7.0
+llvmlite==0.32.1
+pysrt==1.1.2
+nltk==3.6.2
