@@ -1,4 +1,5 @@
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+const fs = require('fs')
 
 async function upload_wav(interaction, text, music, voice) {
     console.log("\tuploading wav to discord...")
@@ -7,9 +8,15 @@ async function upload_wav(interaction, text, music, voice) {
         files: ["/tmp/out.wav"] 
     })
     
-    console.log("\t\tupload done")
-
     await delay(500)
+
+    try {
+        await fs.unlinkSync("/tmp/out.wav")
+    } catch(err) {
+        console.error(err)
+    }
+
+    console.log("\t\tupload done")
 
     console.log(res.attachments.values().next())
     ttsObj = {

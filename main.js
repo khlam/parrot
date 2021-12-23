@@ -56,11 +56,11 @@ client.once('ready', () => {
             options: [
                 {
                     name: 'voice',
-                    description: 'Voice Select: 0 = FastSpeech; 1 = David Attenborough; 2 = Michael Rosen',
+                    description: 'Voice Select: 0 = LJ Speech; 1 = David Attenborough; 2 = Michael Rosen',
                     required: true,
                     choices: [
                         {
-                            "name": "FastSpeech2",
+                            "name": "LJ Speech",
                             "value": 0
                         },
                         {
@@ -152,7 +152,7 @@ client.on('interactionCreate', async (interaction) => {
         switch(voice) {
             case 0: // voice = 0, FastSpeech2
                 await python.fastspeech2(text)
-                name = "FastSpeech2"
+                name = "LJ Speech"
                 break;
 
             case 1: // voice = 1, David Attenborough
