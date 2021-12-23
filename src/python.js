@@ -17,14 +17,14 @@ function fastspeech2(t) {
   })
 }
 
-function tactron2(t) {
+function tactron2(t, model) {
   return new Promise(function(resolve, reject) {
     let options = {
         mode: 'text',
         //pythonPath: 'path/to/python',
         //pythonOptions: ['-u'], // get print results in real-time
         scriptPath: "/app/src/python/tactron2/",
-        args: ['--text',`${t}`]
+        args: ['--text',`${t}`, '--model_select', model]
     }
       
     PythonShell.run('main.py', options, function (err, results) {

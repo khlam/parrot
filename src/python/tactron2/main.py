@@ -210,6 +210,9 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--audio_output_path", type=str, help="path to save output audio to", required=False)
     parser.add_argument("--silence_padding", type=float, help="Padding between sentences in seconds", default=0.15)
     parser.add_argument("--sample_rate", type=int, help="Audio sample rate", default=22050)
+
+    parser.add_argument("--model_select", type=int) # 1 = David_Attenborough; 2 = MichaelRosen
+
     args = parser.parse_args()
 
     #assert os.path.isfile(args.model_path), "Model not found"
@@ -218,10 +221,13 @@ if __name__ == "__main__":
     #args.text = "hey hey ho ho pee pee poo poo"
     args.sample_rate = 22050
 
-    args.model_path = "/app/res/David_Attenborough.pt"
-    #args.model_path = "/app/res/MichaelRosen"
-    args.vocoder_model_path = "/app/res/hifigan_vocoder"
-    args.hifigan_config_path = "/app/models/hifigan_config.json"
+    args.model_path = "/app/src/python/tactron2/res/David_Attenborough.pt"
+    
+    if (args.model_select == 2):
+        args.model_path = "/app/src/python/tactron2/res/MichaelRosen"
+    
+    args.vocoder_model_path = "/app/src/python/tactron2/res/hifigan_vocoder"
+    args.hifigan_config_path = "/app/src/python/tactron2/models/hifigan_config.json"
     args.audio_output_path = "/tmp/out.wav"
     
     model = load_model(args.model_path)

@@ -6,12 +6,12 @@ async function upload_wav(interaction, text, music) {
     })
     
     console.log("\t\tupload done")
-
+    console.log(res.attachments.values().next())
     ttsObj = {
         name: text,
         length: "00:00:00",
         type: "file",
-        address: res.attachments.values().next().value['url'] // url of wav file we just uploaded
+        address: res.attachments.values().next().value['proxyURL'] // url of wav file we just uploaded
     }
 
     let play_result =  await music.play({

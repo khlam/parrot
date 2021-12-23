@@ -303,7 +303,7 @@ async function playSong(data, interaction) {
             inlineVolume: true
         });
     }else if (data.queue[0].info.type === 'file') {
-        resource = await createAudioResource(createReadStream("/tmp/out.wav"), { 
+        resource = await createAudioResource(data.queue[0].url, { 
             inputType: StreamType.Arbitrary,
             inlineVolume: true
         })

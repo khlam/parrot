@@ -51,8 +51,8 @@ client.once('ready', () => {
         })
 
         commands?.create({
-            name: 'fs2',
-            description: 'Call FastSpeech2 Model to Transcribe TTS.',
+            name: 'speak',
+            description: 'Call model to transcribe text to speech.',
             options: [
                 {
                     name: 'text',
@@ -64,9 +64,15 @@ client.once('ready', () => {
         })
 
         commands?.create({
-            name: 't2',
+            name: 'speak',
             description: 'Call Tactron2 Model to Transcribe TTS.',
             options: [
+                {
+                    name: 'voice',
+                    description: 'Voice Select: 0 = FastSpeech; 1 = David Attenborough; 2 = Michael Rosen',
+                    required: true,
+                    type: Constants.ApplicationCommandOptionTypes.NUMBER
+                },
                 {
                     name: 'text',
                     description: 'Text to be transcribed',
@@ -134,40 +140,33 @@ client.on('interactionCreate', async (interaction) => {
         } catch(e){}
     }
 
-    else if (commandName === "fs2") {
+    else if (commandName === "speak") {
+        const voice = options.getNumber('voice')
+
         const text = options.getString('text')
         
-        console.log("STARTING TTS INFERENCE ON TEXT: ", text)
-
         await interaction.deferReply({})
 
+        console.log("STARTING TTS INFERENCE ON TEXT: ", text)
         console.time('inference') 
+
+        if (voice === 0) { // voice = 0, fast-speech 2
+            await python.fastspeech2(text)
+        }
         
-        await python.fastspeech2(text) // call inference on tts
+        else if (voice === 1) { // voice = 1, David Attenborough
+            await python.tactron2(text, 1) // call inference on tts
+        }
+
+        else if (voice === 2) { // voice = 2, Michael Rosen
+            await python.tactron2(text, 2) // call inference on tts
+        }
 
         console.timeEnd('inference')
 
         await helper.upload_wav(interaction, text, music)
 
     }
-
-    else if (commandName === "t2") {
-        const text = options.getString('text')
-        
-        console.log("STARTING TTS INFERENCE ON TEXT: ", text)
-
-        await interaction.deferReply({})
-
-        console.time('inference') 
-        
-        await python.tactron2(text) // call inference on tts
-
-        console.timeEnd('inference')
-
-        await helper.upload_wav(interaction, text, music)
-    }
-
-
 })
 
 client.login(process.env.TOKEN)
