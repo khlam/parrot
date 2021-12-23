@@ -52,19 +52,6 @@ client.once('ready', () => {
 
         commands?.create({
             name: 'speak',
-            description: 'Call model to transcribe text to speech.',
-            options: [
-                {
-                    name: 'text',
-                    description: 'Text to be transcribed',
-                    required: true,
-                    type: Constants.ApplicationCommandOptionTypes.STRING
-                }
-            ]
-        })
-
-        commands?.create({
-            name: 'speak',
             description: 'Call Tactron2 Model to Transcribe TTS.',
             options: [
                 {
