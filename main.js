@@ -3,6 +3,7 @@ const { Client, Intents, Constants } = require('discord.js')
 const music = require('./src/music')
 const yt = require('./src/yt_obj')
 const python = require('./src/python')
+const helper = require('./src/helper')
 
 const client = new Client({
     intents: [
@@ -51,8 +52,14 @@ client.once('ready', () => {
 
         commands?.create({
             name: 'speak',
-            description: 'Call FastSpeech2 Model to Transcribe TTS.',
+            description: 'Call a model to transcribe text.',
             options: [
+                {
+                    name: 'voice',
+                    description: 'Voice Select: 0 = FastSpeech; 1 = David Attenborough; 2 = Michael Rosen',
+                    required: true,
+                    type: Constants.ApplicationCommandOptionTypes.NUMBER
+                },
                 {
                     name: 'text',
                     description: 'Text to be transcribed',
@@ -103,17 +110,15 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     else if (commandName === "skip") {
-        await interaction.reply({content: `200`});
-        await interaction.deleteReply();
-        music.skip({
+        const skipped_title = await music.skip({
             interaction: interaction
         })
+        await interaction.reply({content: `**skipped** *${skipped_title}*`})
     }
     
     else if (commandName === "leave") {
         try{
-            await interaction.reply({content: `200`});
-            await interaction.deleteReply();
+            await interaction.reply({content: `Leaving channel.`})
             music.stop({
                 interaction: interaction
             })
@@ -121,47 +126,40 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     else if (commandName === "speak") {
+        const voice = options.getNumber('voice')
+
         const text = options.getString('text')
         
-        console.log("STARTING TTS INFERENCE ON TEXT: ", text)
-
         await interaction.deferReply({})
 
+        console.log("STARTING TTS INFERENCE ON TEXT: ", text)
         console.time('inference')
-        
-        await python.fastspeech2(text) // call inference on tts
+
+        switch(voice) {
+            case 0: // voice = 0, fast-speech 2
+                await python.fastspeech2(text)
+                break;
+
+            case 1: // voice = 1, David Attenborough
+                await python.tactron2(text, 1)
+                break;
+
+            case 2: // voice = 2, Michael Rosen
+                await python.tactron2(text, 2) // call inference on tts
+                break;
+
+            default:
+                await interaction.editReply({
+                    content: `Invalid voice selection \`${voice}\`. options are:\n\t0 = FastSpeech; 1 = David Attenborough; 2 = Michael Rosen. \nEXAMPLE:\`\`\` /speak voice:0 text:hello world \`\`\``
+                })
+                return
+        }
 
         console.timeEnd('inference')
 
-        const res = await interaction.editReply({ // upload wav file to discord and get url of file
-            content: `working...`,
-            files: ["/tmp/out.wav"] 
-        })
-        
-        ttsObj = {
-            name: text,
-            length: "00:00:00",
-            type: "file",
-            address: res.attachments.values().next().value['url'] // url of wav file we just uploaded
-        }
+        await helper.upload_wav(interaction, text, music, voice)
 
-        let play_result =  await music.play({
-            interaction: interaction,
-            channel: interaction.member.voice.channel,
-            songObj: ttsObj,
-        })
-
-        if (play_result.err === null) {
-            await interaction.editReply({
-                content: `**#${play_result.queue_len}** \t *${ttsObj.name}*\t \t [Link (Discord) 🔗](${ttsObj.address})`
-            })
-        }else {
-            await interaction.editReply({
-                content: `${play_result.err}`
-            })
-        }
     }
-
 })
 
 client.login(process.env.TOKEN)
