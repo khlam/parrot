@@ -1,3 +1,5 @@
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
 async function upload_wav(interaction, text, music, voice) {
     console.log("\tuploading wav to discord...")
     const res = await interaction.editReply({ // upload wav file to discord and get url of file
@@ -6,11 +8,14 @@ async function upload_wav(interaction, text, music, voice) {
     })
     
     console.log("\t\tupload done")
+
+    await delay(500)
+
     console.log(res.attachments.values().next())
     ttsObj = {
         name: text,
         length: "00:00:00",
-        type: "file",
+        type: "tts",
         address: res.attachments.values().next().value['url'] // url of wav file we just uploaded
     }
 

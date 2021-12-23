@@ -305,14 +305,14 @@ async function playSong(data, interaction) {
             inputType: StreamType.Arbitrary,
             inlineVolume: true
         });
-    }else if (data.queue[0].info.type === 'file') {
-        resource = await createAudioResource(data.queue[0].url, { 
-            inputType: StreamType.Arbitrary,
-            inlineVolume: true
+
+        resource.volume.setVolume(0.4)
+
+    }else if (data.queue[0].info.type === 'tts') {
+        resource = await createAudioResource(data.queue[0].url, { // inline volume seems to cause playback problem with fetch from discord.
+            inputType: StreamType.Arbitrary
         })
     }
-
-    resource.volume.setVolume(0.4)
 
     const player = createAudioPlayer();
 

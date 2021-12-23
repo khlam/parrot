@@ -133,18 +133,26 @@ client.on('interactionCreate', async (interaction) => {
         await interaction.deferReply({})
 
         console.log("STARTING TTS INFERENCE ON TEXT: ", text)
-        console.time('inference') 
+        console.time('inference')
 
-        if (voice === 0) { // voice = 0, fast-speech 2
-            await python.fastspeech2(text)
-        }
-        
-        else if (voice === 1) { // voice = 1, David Attenborough
-            await python.tactron2(text, 1) // call inference on tts
-        }
+        switch(voice) {
+            case 0: // voice = 0, fast-speech 2
+                await python.fastspeech2(text)
+                break;
 
-        else if (voice === 2) { // voice = 2, Michael Rosen
-            await python.tactron2(text, 2) // call inference on tts
+            case 1: // voice = 1, David Attenborough
+                await python.tactron2(text, 1)
+                break;
+
+            case 2: // voice = 2, Michael Rosen
+                await python.tactron2(text, 2) // call inference on tts
+                break;
+
+            default:
+                await interaction.editReply({
+                    content: `Invalid voice selection \`${voice}\`. options are:\n\t0 = FastSpeech; 1 = David Attenborough; 2 = Michael Rosen. \nEXAMPLE:\`\`\` /speak voice:0 text:hello world \`\`\``
+                })
+                return
         }
 
         console.timeEnd('inference')
