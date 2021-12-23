@@ -4,7 +4,7 @@ const ytdl = require('ytdl-core');
 const eventEmitter = require('events');
 const activeSongs = new Map();
 const event = new eventEmitter();
-const { createReadStream } = require('fs')
+//const { createReadStream } = require('fs')
 
 module.exports.event = event;
 
@@ -152,7 +152,7 @@ exports.skip = async(options = {}) => {
         const finishChannel = await fetchedData.queue[0].channel
 
         console.log("SKIP: ", fetchedData.queue[0].info)
-
+        const skipped_title = fetchedData.queue[0].info.title
         await fetchedData.queue.shift();
         
         if(fetchedData.queue.length > 0) {
@@ -170,6 +170,9 @@ exports.skip = async(options = {}) => {
             await connection.destroy();
     
         };
+
+        return skipped_title
+
     } catch(e) {}
 };
 
@@ -296,7 +299,7 @@ exports.volume = async (options = {}) => {
 };
 
 async function playSong(data, interaction) {
-    let resource
+    let resource = null
     if (data.queue[0].info.type === 'yt') {
         resource = await createAudioResource(ytdl(data.queue[0].url, { filter: 'audioonly', highWaterMark: 1<<25}), { 
             inputType: StreamType.Arbitrary,
@@ -308,7 +311,6 @@ async function playSong(data, interaction) {
             inlineVolume: true
         })
     }
-    
 
     resource.volume.setVolume(0.4)
 

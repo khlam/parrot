@@ -123,17 +123,15 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     else if (commandName === "skip") {
-        await interaction.reply({content: `200`});
-        await interaction.deleteReply();
-        music.skip({
+        const skipped_title = await music.skip({
             interaction: interaction
         })
+        await interaction.reply({content: `**skipped** *${skipped_title}*`})
     }
     
     else if (commandName === "leave") {
         try{
-            await interaction.reply({content: `200`});
-            await interaction.deleteReply();
+            await interaction.reply({content: `Leaving channel.`})
             music.stop({
                 interaction: interaction
             })

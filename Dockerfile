@@ -17,10 +17,10 @@ RUN curl "https://nodejs.org/dist/latest-v17.x/node-v17.3.0-linux-x64.tar.xz" -O
 WORKDIR /app
 COPY . /app
 
+RUN npm install -g node-gyp && npm install
+
 RUN pip3 install -r /app/src/python/fastspeech2/requirements.txt 
 RUN pip3 install -r /app/src/python/tactron2/requirements.txt 
-
-RUN npm install -g node-gyp && npm install
 
 RUN curl -L -o /app/src/python/fastspeech2/output/ckpt/LJSpeech/900000.pth.tar https://github.com/khlam/parrot/releases/download/generator_LJSpeech.pth.tar/900000.pth.tar
 RUN curl -L -o /app/src/python/fastspeech2/hifigan/generator_LJSpeech.pth.tar https://github.com/khlam/parrot/releases/download/generator_LJSpeech.pth.tar/generator_LJSpeech.pth.tar
