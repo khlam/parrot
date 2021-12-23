@@ -58,6 +58,20 @@ client.once('ready', () => {
                     name: 'voice',
                     description: 'Voice Select: 0 = FastSpeech; 1 = David Attenborough; 2 = Michael Rosen',
                     required: true,
+                    choices: [
+                        {
+                            "name": "FastSpeech2",
+                            "value": 0
+                        },
+                        {
+                            "name": "David Attenborough",
+                            "value": 1
+                        },
+                        {
+                            "name": "Michael Rosen",
+                            "value": 2
+                        }
+                    ],
                     type: Constants.ApplicationCommandOptionTypes.NUMBER
                 },
                 {
@@ -127,7 +141,7 @@ client.on('interactionCreate', async (interaction) => {
 
     else if (commandName === "speak") {
         const voice = options.getNumber('voice')
-
+        let name = ""
         const text = options.getString('text')
         
         await interaction.deferReply({})
@@ -136,16 +150,19 @@ client.on('interactionCreate', async (interaction) => {
         console.time('inference')
 
         switch(voice) {
-            case 0: // voice = 0, fast-speech 2
+            case 0: // voice = 0, FastSpeech2
                 await python.fastspeech2(text)
+                name = "FastSpeech2"
                 break;
 
             case 1: // voice = 1, David Attenborough
                 await python.tactron2(text, 1)
+                name = "David Attenborough"
                 break;
 
             case 2: // voice = 2, Michael Rosen
-                await python.tactron2(text, 2) // call inference on tts
+                await python.tactron2(text, 2)
+                name = "Michael Rosen"
                 break;
 
             default:
@@ -157,7 +174,7 @@ client.on('interactionCreate', async (interaction) => {
 
         console.timeEnd('inference')
 
-        await helper.upload_wav(interaction, text, music, voice)
+        await helper.upload_wav(interaction, text, music, name)
 
     }
 })
