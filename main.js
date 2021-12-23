@@ -52,7 +52,7 @@ client.once('ready', () => {
 
         commands?.create({
             name: 'speak',
-            description: 'Call Tactron2 Model to Transcribe TTS.',
+            description: 'Call a model to transcribe text.',
             options: [
                 {
                     name: 'voice',
