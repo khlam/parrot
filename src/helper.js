@@ -1,4 +1,4 @@
-async function upload_wav(interaction, text, music) {
+async function upload_wav(interaction, text, music, voice) {
     console.log("\tuploading wav to discord...")
     const res = await interaction.editReply({ // upload wav file to discord and get url of file
         content: `working...`,
@@ -22,7 +22,7 @@ async function upload_wav(interaction, text, music) {
 
     if (play_result.err === null) {
         await interaction.editReply({
-            content: `**#${play_result.queue_len}** \t *${ttsObj.name}*\t \t [Link (Discord) 🔗](${ttsObj.address})`
+            content: `**#${play_result.queue_len}** Voice: ${voice} \t *${ttsObj.name}*\t \t [Link (Discord) 🔗](${ttsObj.address})`
         })
     }else {
         await interaction.editReply({

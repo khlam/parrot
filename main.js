@@ -162,7 +162,7 @@ client.on('interactionCreate', async (interaction) => {
 
         console.timeEnd('inference')
 
-        await helper.upload_wav(interaction, text, music)
+        await helper.upload_wav(interaction, text, music, voice)
 
     }
 })
