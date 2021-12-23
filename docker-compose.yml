@@ -9,6 +9,9 @@ services:
     volumes:
       - .:/app/
       - /app/node_modules
+      - /app/src/python/fastspeech2/output/ckpt/LJSpeech
+      - /app/src/python/fastspeech2/hifigan
+      - /app/src/python/tactron2/res
       #- ./output/:/tmp/
     environment:
         TOKEN: ${TOKEN}
