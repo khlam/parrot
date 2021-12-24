@@ -158,49 +158,22 @@ def synthesize(
     if not isinstance(text, list) and split_text:
         # Split text into multiple lines
         text = nltk.tokenize.sent_tokenize(text)
+
     print(text)
-    if isinstance(text, list):  # not used
-        # Multi-lines given
-        text = [line.strip() for line in text if line.strip()]
-        mels = []
-        alignments = []
-        for line in text:
-            text = clean_text(line, symbols)
-            sequence = text_to_sequence(text, symbols)
-            _, mel_outputs_postnet, _, alignment = model.inference(sequence, max_decoder_steps)
-            mels.append(mel_outputs_postnet)
-            alignments.append(alignment)
 
-        if graph_path:
-            generate_graph(join_alignment_graphs(alignments), graph_path)
+    # Single sentence
+    text = clean_text(text.strip(), symbols)
+    sequence = text_to_sequence(text, symbols)
+    _, mel_outputs_postnet, _, alignment = model.inference(sequence, max_decoder_steps)
 
-        if audio_path:
-            silence = np.zeros(int(silence_padding * sample_rate)).astype("int16")
-            audio_segments = []
-            for i in range(len(mels)):
-                audio_segments.append(vocoder.generate_audio(mels[i]))
-                if i != len(mels) - 1:
-                    audio_segments.append(silence)
-
-            audio = np.concatenate(audio_segments)
-            write(audio_path, sample_rate, audio)
-    else:
-        print("not a list")
-        # Single sentence
-        text = clean_text(text.strip(), symbols)
-        sequence = text_to_sequence(text, symbols)
-        _, mel_outputs_postnet, _, alignment = model.inference(sequence, max_decoder_steps)
-
-        if graph_path:
-            generate_graph(alignment, graph_path)
-
-        if audio_path:
-            audio = vocoder.generate_audio(mel_outputs_postnet)
-            write(audio_path, sample_rate, audio)
+    audio = vocoder.generate_audio(mel_outputs_postnet)
+    write(audio_path, sample_rate, audio)
+    
+    return
 
 
 if __name__ == "__main__":
-    """Synthesize audio using model and vocoder"""
+
     parser = argparse.ArgumentParser(description="Synthesize audio using model and vocoder")
     parser.add_argument("-m", "--model_path", type=str, help="tacotron2 model path", required=False)
     parser.add_argument("-vm", "--vocoder_model_path", type=str, help="vocoder model path", required=False)
@@ -210,6 +183,8 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--audio_output_path", type=str, help="path to save output audio to", required=False)
     parser.add_argument("--silence_padding", type=float, help="Padding between sentences in seconds", default=0.15)
     parser.add_argument("--sample_rate", type=int, help="Audio sample rate", default=22050)
+
+    parser.add_argument("--out_file", type=str)
 
     parser.add_argument("--model_select", type=int) # 1 = David_Attenborough; 2 = MichaelRosen
 
@@ -228,7 +203,7 @@ if __name__ == "__main__":
     
     args.vocoder_model_path = "/app/src/python/tactron2/res/hifigan_vocoder"
     args.hifigan_config_path = "/app/src/python/tactron2/models/hifigan_config.json"
-    args.audio_output_path = "/tmp/out.wav"
+    args.audio_output_path = "/tmp/" + args.out_file
     
     model = load_model(args.model_path)
     vocoder = Hifigan(args.vocoder_model_path, args.hifigan_config_path)
@@ -242,3 +217,4 @@ if __name__ == "__main__":
         silence_padding=args.silence_padding,
         sample_rate=args.sample_rate,
     )
+    print("DONE")

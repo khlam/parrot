@@ -141,27 +141,30 @@ client.on('interactionCreate', async (interaction) => {
 
     else if (commandName === "speak") {
         const voice = options.getNumber('voice')
-        let name = ""
         const text = options.getString('text')
+        const out_file = `${helper.randint(1111, 9999)}.wav`
         
+        let name = ""
+
         await interaction.deferReply({})
 
         console.log("STARTING TTS INFERENCE ON TEXT: ", text)
-        console.time('inference')
+        console.log("out_file:", out_file)
+        //console.time('inference')
 
         switch(voice) {
             case 0: // voice = 0, FastSpeech2
-                await python.fastspeech2(text)
+                await python.fastspeech2(text, out_file)
                 name = "LJ Speech"
                 break;
 
             case 1: // voice = 1, David Attenborough
-                await python.tactron2(text, 1)
+                await python.tactron2(text, 1, out_file)
                 name = "David Attenborough"
                 break;
 
             case 2: // voice = 2, Michael Rosen
-                await python.tactron2(text, 2)
+                await python.tactron2(text, 2, out_file)
                 name = "Michael Rosen"
                 break;
 
@@ -172,9 +175,9 @@ client.on('interactionCreate', async (interaction) => {
                 return
         }
 
-        console.timeEnd('inference')
+        //console.timeEnd('inference')
 
-        await helper.upload_wav(interaction, text, music, name)
+        await helper.upload_wav(interaction, text, music, name, out_file)
 
     }
 })

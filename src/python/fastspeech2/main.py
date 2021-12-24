@@ -58,7 +58,7 @@ def preprocess_english(text, preprocess_config):
 
     return np.array(sequence)
 
-def synthesize(model, step, configs, vocoder, batchs, control_values):
+def synthesize(model, step, configs, vocoder, batchs, control_values, out_file):
     preprocess_config, model_config, train_config = configs
     pitch_control, energy_control, duration_control = control_values
 
@@ -79,6 +79,7 @@ def synthesize(model, step, configs, vocoder, batchs, control_values):
                 model_config,
                 preprocess_config,
                 train_config["path"]["result_path"],
+                out_file
             )
 
 
@@ -92,6 +93,8 @@ if __name__ == "__main__":
         default=None,
         help="raw text to synthesize, for single-sentence mode only",
     )
+
+    parser.add_argument("--out_file", type=str)
     
     args = parser.parse_args()
 
@@ -214,4 +217,4 @@ if __name__ == "__main__":
 
     control_values = args.pitch_control, args.energy_control, args.duration_control
 
-    synthesize(model, args.restore_step, configs, vocoder, batchs, control_values)
+    synthesize(model, args.restore_step, configs, vocoder, batchs, control_values, args.out_file)

@@ -148,7 +148,7 @@ def synth_one_sample(targets, predictions, vocoder, model_config, preprocess_con
     return fig, wav_reconstruction, wav_prediction, basename
 
 
-def synth_samples(targets, predictions, vocoder, model_config, preprocess_config, path):
+def synth_samples(targets, predictions, vocoder, model_config, preprocess_config, path, out_file):
 
     basenames = targets[0]
     for i in range(len(predictions[0])):
@@ -185,7 +185,7 @@ def synth_samples(targets, predictions, vocoder, model_config, preprocess_config
 
     sampling_rate = preprocess_config["preprocessing"]["audio"]["sampling_rate"]
     for wav, basename in zip(wav_predictions, basenames):
-        wavfile.write(os.path.join("/tmp/", "out.wav".format(basename)), sampling_rate, wav)
+        wavfile.write(os.path.join("/tmp/", out_file.format(basename)), sampling_rate, wav)
 
 def pad_1D(inputs, PAD=0):
     def pad_data(x, length, PAD):

@@ -1,20 +1,16 @@
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-const fs = require('fs')
 
-async function upload_wav(interaction, text, music, voice) {
-    console.log("\tuploading wav to discord...")
+async function upload_wav(interaction, text, music, voice, out_file) {
+    console.log(`\tuploading ${out_file} to discord...`)
+
+    const out_path = `/tmp/${out_file}`
+
     const res = await interaction.editReply({ // upload wav file to discord and get url of file
         content: `working...`,
-        files: ["/tmp/out.wav"] 
+        files: [`${out_path}`] 
     })
     
     await delay(500)
-
-    try {
-        await fs.unlinkSync("/tmp/out.wav")
-    } catch(err) {
-        console.error(err)
-    }
 
     console.log("\t\tupload done")
 
@@ -41,8 +37,17 @@ async function upload_wav(interaction, text, music, voice) {
             content: `${play_result.err}`
         })
     }
+    
+    return
+}
+
+function randint(min, max) {  
+    return Math.floor(
+      Math.random() * (max - min) + min
+    )
 }
 
 module.exports = {
-    upload_wav
+    upload_wav,
+    randint
 }
