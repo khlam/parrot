@@ -5,7 +5,7 @@ import numpy as np
 from scipy.io.wavfile import write
 from os.path import dirname, abspath
 import sys
-
+import re
 import nltk
 
 nltk.download("punkt")
@@ -105,6 +105,12 @@ def join_alignment_graphs(alignments):
     return joined
 
 
+def check_character_count(text):
+    for line in text:
+        if (len(line) >= 120):
+            return True
+    return False
+
 def synthesize(
     model,
     text,
@@ -155,20 +161,41 @@ def synthesize(
     if audio_path:
         assert vocoder, "Missing vocoder"
 
-    if not isinstance(text, list) and split_text:
-        # Split text into multiple lines
-        text = nltk.tokenize.sent_tokenize(text)
+    original_text = text
 
+    text = nltk.tokenize.sent_tokenize(original_text)
+    
+    text = [line.strip() for line in text if line.strip()]
+
+    if (check_character_count(text) == True):
+        text = re.split('[?.,]', original_text) # split on punctuation
+        text = [t for t in text if ((t != "") and (t != ".") and (t != "!") and (t != "?") and (t != ",") and (t != ";") and (t != ":"))]
+        
     print(text)
 
-    # Single sentence
-    text = clean_text(text.strip(), symbols)
-    sequence = text_to_sequence(text, symbols)
-    _, mel_outputs_postnet, _, alignment = model.inference(sequence, max_decoder_steps)
+    mels = []
+    alignments = []
+    for line in text:
+        text = clean_text(line, symbols)
+        sequence = text_to_sequence(text, symbols)
+        _, mel_outputs_postnet, _, alignment = model.inference(sequence, max_decoder_steps)
+        mels.append(mel_outputs_postnet)
+        alignments.append(alignment)
 
-    audio = vocoder.generate_audio(mel_outputs_postnet)
-    write(audio_path, sample_rate, audio)
-    
+    if graph_path:
+        generate_graph(join_alignment_graphs(alignments), graph_path)
+
+    if audio_path:
+        silence = np.zeros(int(silence_padding * sample_rate)).astype("int16")
+        audio_segments = []
+        for i in range(len(mels)):
+            audio_segments.append(vocoder.generate_audio(mels[i]))
+            if i != len(mels) - 1:
+                audio_segments.append(silence)
+
+        audio = np.concatenate(audio_segments)
+        write(audio_path, sample_rate, audio)
+
     return
 
 
@@ -217,4 +244,5 @@ if __name__ == "__main__":
         silence_padding=args.silence_padding,
         sample_rate=args.sample_rate,
     )
-    print("DONE")
+    
+    print(args.out_file, "SUCCESS")

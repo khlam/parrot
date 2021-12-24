@@ -218,3 +218,4 @@ if __name__ == "__main__":
     control_values = args.pitch_control, args.energy_control, args.duration_control
 
     synthesize(model, args.restore_step, configs, vocoder, batchs, control_values, args.out_file)
+    print(args.out_file, "SUCCESS")

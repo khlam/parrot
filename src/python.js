@@ -10,7 +10,12 @@ function fastspeech2(t, out_file) {
       
     PythonShell.run('main.py', options, function (err, results) {
         console.log(">", results)
-        return resolve(results)
+        console.log(">>", results[results.length - 1])
+        if (results[results.length - 1] === `${out_file} SUCCESS`) {
+          return resolve(true)
+        }else {
+          return resolve(false)
+        }
     })
   })
 }
@@ -24,8 +29,13 @@ function tactron2(t, model, out_file) { // there is a word count limit
     }
       
     PythonShell.run('main.py', options, function (err, results) {
-        console.log(">", results)
-        return resolve(results)
+      console.log(">", results)
+      console.log(">>", results[results.length - 1])
+      if (results[results.length - 1] === `${out_file} SUCCESS`) {
+        return resolve(true)
+      }else {
+        return resolve(false)
+      }
     })
   })
 }

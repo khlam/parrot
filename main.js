@@ -152,33 +152,41 @@ client.on('interactionCreate', async (interaction) => {
         console.log("out_file:", out_file)
         //console.time('inference')
 
+        let inf_success = false
+
         switch(voice) {
             case 0: // voice = 0, FastSpeech2
-                await python.fastspeech2(text, out_file)
+                inf_success = await python.fastspeech2(text, out_file)
                 name = "LJ Speech"
                 break;
 
             case 1: // voice = 1, David Attenborough
-                await python.tactron2(text, 1, out_file)
+                inf_success = await python.tactron2(text, 1, out_file)
                 name = "David Attenborough"
                 break;
 
             case 2: // voice = 2, Michael Rosen
-                await python.tactron2(text, 2, out_file)
+                inf_success = await python.tactron2(text, 2, out_file)
                 name = "Michael Rosen"
                 break;
 
             default:
                 await interaction.editReply({
-                    content: `Invalid voice selection \`${voice}\`. options are:\n\t0 = FastSpeech; 1 = David Attenborough; 2 = Michael Rosen. \nEXAMPLE:\`\`\` /speak voice:0 text:hello world \`\`\``
+                    content: `Invalid voice selection \`${voice}\`.`
                 })
                 return
         }
 
         //console.timeEnd('inference')
 
-        await helper.upload_wav(interaction, text, music, name, out_file)
-
+        if (inf_success === true){
+            await helper.upload_wav(interaction, text, music, name, out_file)
+        }else {
+            await interaction.editReply({
+                content: `Inference failed, please rephrase your text and try again.`
+            })
+            return
+        }
     }
 })
 
