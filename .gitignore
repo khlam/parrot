@@ -3,3 +3,4 @@ node_modules/
 *.wav
 *.pth.tar
 output/
+.cache

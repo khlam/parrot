@@ -20,7 +20,10 @@ COPY . /app
 RUN npm install -g node-gyp && npm install
 
 RUN pip3 install -r /app/src/python/fastspeech2/requirements.txt 
-RUN pip3 install -r /app/src/python/tactron2/requirements.txt 
+RUN pip3 install -r /app/src/python/tactron2/requirements.txt
+RUN pip3 install -r /app/src/python/song_similarity/requirements.txt 
+
+RUN curl -L -o /app/src/python/song_similarity/data/data.csv https://github.com/khlam/parrot/releases/download/spotify_song_datasets/data.csv
 
 RUN curl -L -o /app/src/python/fastspeech2/output/ckpt/LJSpeech/900000.pth.tar https://github.com/khlam/parrot/releases/download/generator_LJSpeech.pth.tar/900000.pth.tar
 RUN curl -L -o /app/src/python/fastspeech2/hifigan/generator_LJSpeech.pth.tar https://github.com/khlam/parrot/releases/download/generator_LJSpeech.pth.tar/generator_LJSpeech.pth.tar

@@ -12,9 +12,11 @@ services:
       - /app/src/python/fastspeech2/output/ckpt/LJSpeech
       - /app/src/python/fastspeech2/hifigan
       - /app/src/python/tactron2/res
+      - /app/src/python/song_similarity/data
       #- ./output/:/tmp/
     environment:
         TOKEN: ${TOKEN}
-        GSHEET: ${GSHEET}
+        SPOTIFY_CLIENT: ${SPOTIFY_CLIENT}
+        SPOTIFY_SECRET: ${SPOTIFY_SECRET}
     #command: bash -c "python3 /app/src/python/fastspeech2/main.py"
     #command: bash -c "nodemon -L main.js"
