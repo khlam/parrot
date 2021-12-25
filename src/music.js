@@ -101,8 +101,10 @@ exports.stop = async (options = {}) => {
         activeSongs.delete(interaction.guild.id);
 
         console.log("LEAVING VOICE CHANNEL")
+        return true
     }catch(e){
         console.log("FAILED TO LEAVE VOICE", e)
+        return false
     }
 };
 

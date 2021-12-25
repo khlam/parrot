@@ -1,20 +1,30 @@
+const fs = require('fs')
+
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-async function upload_wav(interaction, text, music, voice, out_file) {
-    console.log(`\tuploading ${out_file} to discord...`)
+async function upload_wav(interaction, text, music, voice, out_id) {
+    console.log(`\tuploading ${out_id} to discord...`)
 
-    const out_path = `/tmp/${out_file}`
-
-    const res = await interaction.editReply({ // upload wav file to discord and get url of file
+    const out_path = `/tmp/${out_id}.wav`
+    await interaction.editReply({
+        content: "Done"
+    })
+    const res = await interaction.channel.send({ // upload wav file to discord and get url of file
         content: `working...`,
-        files: [`${out_path}`] 
+        files: [`${out_path}`]
     })
     
     await delay(500)
 
     console.log("\t\tupload done")
 
-    console.log(res.attachments.values().next())
+    try {
+        fs.unlinkSync(out_path)
+    } catch(err) {
+        console.error(err)
+    }
+
+    //console.log(res.attachments.values().next())
     ttsObj = {
         name: text,
         length: "00:00:00",
@@ -29,11 +39,11 @@ async function upload_wav(interaction, text, music, voice, out_file) {
     })
 
     if (play_result.err === null) {
-        await interaction.editReply({
-            content: `**#${play_result.queue_len}** Voice: ${voice} \t *${ttsObj.name}*\t \t [Link (Discord) 🔗](${ttsObj.address})`
+        await res.edit({
+            content: `**#${play_result.queue_len}** Voice: ${voice} \t *${ttsObj.name}*\t`
         })
     }else {
-        await interaction.editReply({
+        await res.edit({
             content: `${play_result.err}`
         })
     }

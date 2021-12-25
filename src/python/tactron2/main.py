@@ -8,6 +8,8 @@ import sys
 import re
 import nltk
 
+import textwrap
+
 nltk.download("punkt")
 
 sys.path.append(dirname(dirname(abspath(__file__))))
@@ -105,9 +107,10 @@ def join_alignment_graphs(alignments):
     return joined
 
 
-def check_character_count(text):
+def check_character_count(text, length):
     for line in text:
-        if (len(line) >= 120):
+        print(line, len(line))
+        if (len(line) >= length):
             return True
     return False
 
@@ -167,24 +170,26 @@ def synthesize(
     
     text = [line.strip() for line in text if line.strip()]
 
-    if (check_character_count(text) == True):
+    if (check_character_count(text, 120) == True):
         text = re.split('[?.,]', original_text) # split on punctuation
         text = [t for t in text if ((t != "") and (t != ".") and (t != "!") and (t != "?") and (t != ",") and (t != ";") and (t != ":"))]
-        
+
+        #if check_character_count(text, 10) == True:
+        #    text = textwrap.wrap(original_text, 10, break_long_words=True)
+
     print(text)
 
     mels = []
-    alignments = []
-    for line in text:
-        text = clean_text(line, symbols)
-        sequence = text_to_sequence(text, symbols)
-        _, mel_outputs_postnet, _, alignment = model.inference(sequence, max_decoder_steps)
-        mels.append(mel_outputs_postnet)
-        alignments.append(alignment)
-
-    if graph_path:
-        generate_graph(join_alignment_graphs(alignments), graph_path)
-
+    #alignments = []
+    for i, line in enumerate(text):
+        line = clean_text(line.strip(), symbols)
+        sequence = text_to_sequence(line, symbols)
+        try:
+            _, mel_outputs_postnet, _, _ = model.inference(sequence, max_decoder_steps)
+            mels.append(mel_outputs_postnet)
+        except:
+            break
+        
     if audio_path:
         silence = np.zeros(int(silence_padding * sample_rate)).astype("int16")
         audio_segments = []
@@ -211,7 +216,7 @@ if __name__ == "__main__":
     parser.add_argument("--silence_padding", type=float, help="Padding between sentences in seconds", default=0.15)
     parser.add_argument("--sample_rate", type=int, help="Audio sample rate", default=22050)
 
-    parser.add_argument("--out_file", type=str)
+    parser.add_argument("--out_id", type=str)
 
     parser.add_argument("--model_select", type=int) # 1 = David_Attenborough; 2 = MichaelRosen
 
@@ -230,7 +235,7 @@ if __name__ == "__main__":
     
     args.vocoder_model_path = "/app/src/python/tactron2/res/hifigan_vocoder"
     args.hifigan_config_path = "/app/src/python/tactron2/models/hifigan_config.json"
-    args.audio_output_path = "/tmp/" + args.out_file
+    args.audio_output_path = "/tmp/" + args.out_id + ".wav"
     
     model = load_model(args.model_path)
     vocoder = Hifigan(args.vocoder_model_path, args.hifigan_config_path)
@@ -245,4 +250,4 @@ if __name__ == "__main__":
         sample_rate=args.sample_rate,
     )
     
-    print(args.out_file, "SUCCESS")
+    print(args.out_id, "SUCCESS")

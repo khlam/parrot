@@ -116,10 +116,16 @@ client.on('interactionCreate', async (interaction) => {
 
             } catch(e) {
                 console.log(e)
-                interaction.reply({content: `ERROR: Failed to Join Requestor Voice Channel`})
+                interaction.reply({
+                    content: `ERROR: Failed to Join Requestor Voice Channel`,
+                    ephemeral: true
+                })
             }
         }else {
-            interaction.reply({content: `ERROR: Invalid Youtube URL`})
+            interaction.reply({
+                content: `ERROR: Invalid Youtube URL`,
+                ephemeral: true
+            })
         }
     }
 
@@ -132,58 +138,69 @@ client.on('interactionCreate', async (interaction) => {
     
     else if (commandName === "leave") {
         try{
-            await interaction.reply({content: `Leaving channel.`})
-            music.stop({
+            const _r = await music.stop({
                 interaction: interaction
             })
+
+            if (_r === true) {
+                await interaction.reply({content: `Leaving voice channel.`})
+            }else {
+                await interaction.reply({
+                    content: `ERROR: Cannot leave voice channel.`,
+                    ephemeral: true
+                })
+            }
+            
         } catch(e){}
     }
 
     else if (commandName === "speak") {
         const voice = options.getNumber('voice')
         const text = options.getString('text')
-        const out_file = `${helper.randint(1111, 9999)}.wav`
+        const out_id = `${helper.randint(1111, 9999)}.${interaction.user.discriminator}.${new Date(new Date()-3600*1000*3).toISOString()}`
         
         let name = ""
 
-        await interaction.deferReply({})
+        await interaction.deferReply({ephemeral: true})
 
         console.log("STARTING TTS INFERENCE ON TEXT: ", text)
-        console.log("out_file:", out_file)
+        console.log("out_id:", out_id)
         //console.time('inference')
 
         let inf_success = false
 
         switch(voice) {
             case 0: // voice = 0, FastSpeech2
-                inf_success = await python.fastspeech2(text, out_file)
+                inf_success = await python.fastspeech2(text, out_id)
                 name = "LJ Speech"
                 break;
 
             case 1: // voice = 1, David Attenborough
-                inf_success = await python.tactron2(text, 1, out_file)
+                inf_success = await python.tactron2(text, 1, out_id)
                 name = "David Attenborough"
                 break;
 
             case 2: // voice = 2, Michael Rosen
-                inf_success = await python.tactron2(text, 2, out_file)
+                inf_success = await python.tactron2(text, 2, out_id)
                 name = "Michael Rosen"
                 break;
 
             default:
                 await interaction.editReply({
-                    content: `Invalid voice selection \`${voice}\`.`
+                    content: `Error: Invalid voice selection \`${voice}\`.`,
+                    ephemeral: true
                 })
                 return
         }
 
         //console.timeEnd('inference')
 
-        if (inf_success === true){
-            await helper.upload_wav(interaction, text, music, name, out_file)
-        }else {
+        if (inf_success === true){ // if result of calling python script ends in '<xxxx>.wav SUCCESS' then wav file was created
+            await helper.upload_wav(interaction, text, music, name, out_id)
+        }else { // otherwise the python did not succeed
             await interaction.editReply({
-                content: `Inference failed, please rephrase your text and try again.`
+                content: `Error: Sentence may be too long. Please rephrase text and try again.`,
+                ephemeral: true
             })
             return
         }
