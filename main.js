@@ -385,3 +385,8 @@ process.once('SIGTERM', function () {
     console.log('SIGTERM. Shutting down.')
     process.exit()
 })
+
+process.once('SIGKILL', function () {
+    console.log('SIGKILL. Shutting down.')
+    process.exit()
+})
