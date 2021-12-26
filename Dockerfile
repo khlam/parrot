@@ -44,4 +44,5 @@ RUN npm install --global nodemon
 CMD /node-v17.3.0-linux-x64/lib/node_modules/nodemon/bin/nodemon.js -L main.js
 
 FROM base
-CMD node main.js
+RUN npm install pm2@latest -g
+ENTRYPOINT ["pm2", "start", "pm2-apps.json", "--no-daemon"]
