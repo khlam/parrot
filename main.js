@@ -4,8 +4,27 @@ const music = require('./src/music')
 const yt = require('./src/yt_obj')
 const python = require('./src/python')
 const helper = require('./src/helper')
-
 const r = require('./src/recommender')
+
+let disable_tts_all = false
+let disable_tts_da = false
+let disable_tts_mr = false
+
+
+if ('DISABLE_TTS_ALL' in process.env) {
+    disable_tts_all = true
+    console.log("ALL TTS DISABLED")
+}
+
+if ('DISABLE_TTS_DA' in process.env) {
+    disable_tts_da = true
+    console.log("Sir David Attenborough TTS DISABLED")
+}
+
+if ('DISABLE_TTS_MR' in process.env) {
+    disable_tts_mr = true
+    console.log("Michael Rosen TTS DISABLED")
+}
 
 const client = new Client({
     intents: [
@@ -207,51 +226,75 @@ client.on('interactionCreate', async (interaction) => {
     }
 
     else if (commandName === "speak") {
-        const voice = options.getNumber('voice')
-        const text = options.getString('text')
-        const out_id = `${helper.randint(1111, 9999)}.${interaction.user.discriminator}.${new Date(new Date()-3600*1000*3).toISOString()}`
-        
-        let name = ""
-
-        await interaction.deferReply({ephemeral: true})
-
-        console.log("STARTING TTS INFERENCE ON TEXT: ", text)
-        console.log("out_id:", out_id)
-        //console.time('inference')
-
-        let inf_success = false
-
-        switch(voice) {
-            case 0: // voice = 0, FastSpeech2
-                inf_success = await python.fastspeech2(text, out_id)
-                name = "LJ Speech"
-                break;
-
-            case 1: // voice = 1, David Attenborough
-                inf_success = await python.tactron2(text, 1, out_id)
-                name = "David Attenborough"
-                break;
-
-            case 2: // voice = 2, Michael Rosen
-                inf_success = await python.tactron2(text, 2, out_id)
-                name = "Michael Rosen"
-                break;
-
-            default:
+        if (disable_tts_all === false) {
+            const voice = options.getNumber('voice')
+            const text = options.getString('text')
+            const out_id = `${helper.randint(1111, 9999)}.${interaction.user.discriminator}.${new Date(new Date()-3600*1000*3).toISOString()}`
+            
+            let name = ""
+    
+            await interaction.deferReply({ephemeral: true})
+    
+            console.log("STARTING TTS INFERENCE ON TEXT: ", text)
+            console.log("out_id:", out_id)
+            //console.time('inference')
+    
+            let inf_success = false
+    
+            switch(voice) {
+                case 0: // voice = 0, FastSpeech2
+                    inf_success = await python.fastspeech2(text, out_id)
+                    name = "LJ Speech"
+                    break;
+    
+                case 1: // voice = 1, David Attenborough
+                    if (disable_tts_da === false) {
+                        inf_success = await python.tactron2(text, 1, out_id)
+                        name = "David Attenborough"
+                    }else {
+                        await interaction.editReply({
+                            content: `Error: Sir David Attenborough TTS disabled.`,
+                            ephemeral: true
+                        })
+                        return
+                    }
+                    break;
+    
+                case 2: // voice = 2, Michael Rosen
+                    if (disable_tts_mr === false) {
+                        inf_success = await python.tactron2(text, 2, out_id)
+                        name = "Michael Rosen"
+                    }else {
+                        await interaction.editReply({
+                            content: `Error: Michael Rosen TTS disabled.`,
+                            ephemeral: true
+                        })
+                        return
+                    }
+                    break;
+    
+                default:
+                    await interaction.editReply({
+                        content: `Error: Invalid voice selection \`${voice}\`.`,
+                        ephemeral: true
+                    })
+                    return
+            }
+    
+            //console.timeEnd('inference')
+    
+            if (inf_success === true){ // if result of calling python script ends in '<xxxx>.wav SUCCESS' then wav file was created
+                await helper.upload_wav(interaction, text, music, name, out_id)
+            }else { // otherwise the python did not succeed
                 await interaction.editReply({
-                    content: `Error: Invalid voice selection \`${voice}\`.`,
+                    content: `Error: Sentence may be too long. Please rephrase text and try again.`,
                     ephemeral: true
                 })
                 return
-        }
-
-        //console.timeEnd('inference')
-
-        if (inf_success === true){ // if result of calling python script ends in '<xxxx>.wav SUCCESS' then wav file was created
-            await helper.upload_wav(interaction, text, music, name, out_id)
-        }else { // otherwise the python did not succeed
-            await interaction.editReply({
-                content: `Error: Sentence may be too long. Please rephrase text and try again.`,
+            }
+        }else{
+            await interaction.reply({
+                content: `Error: All TTS options are disabled.`,
                 ephemeral: true
             })
             return

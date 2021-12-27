@@ -18,5 +18,8 @@ services:
         TOKEN: ${TOKEN}
         SPOTIFY_CLIENT: ${SPOTIFY_CLIENT}
         SPOTIFY_SECRET: ${SPOTIFY_SECRET}
+        #DISABLE_TTS_ALL: true
+        DISABLE_TTS_DA: true
+        DISABLE_TTS_MR: true
     #command: bash -c "python3 /app/src/python/fastspeech2/main.py"
     #command: bash -c "nodemon -L main.js"
