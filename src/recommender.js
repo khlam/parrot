@@ -1,10 +1,32 @@
 const {PythonShell} = require('python-shell')
+
+const ytdl = require('ytdl-core')
+
 const usetube = require('usetube')
 
-let song_list = []
+const mix_data = new Map()
+
+async function parse_from_yt(url) {
+    try{
+        const meta_data = await ytdl.getInfo(url)
+
+        if (("videoDetails" in meta_data) && ("media" in meta_data.videoDetails) && ("song" in meta_data.videoDetails.media) && ("artist" in meta_data.videoDetails.media)){
+            console.log("URL parsed: ", meta_data.videoDetails.media)
+            return {
+                "track": meta_data.videoDetails.media.song,
+                "artist": meta_data.videoDetails.media.artist
+            }
+        }
+    }catch(e){
+        console.log(e)
+        return false
+    }
+    return false
+}
 
 async function search_yt(songObj) {
     const query = `${songObj.name} by ${songObj.artists}`
+    console.log("MIX SEARCHING YT FOR:", query)
     const result = await usetube.searchVideo(query)
     try{
         let result_id = result.videos[0].id
@@ -15,43 +37,37 @@ async function search_yt(songObj) {
 
 }
 
-function already_in_song_list(song_name) {
-    song_list.forEach(song => {
-        if (song.title === song_name) {
-            return true
-        }
-    })
+function get_mix_size() {
+    return mix_data.size
+}
 
-    return false
+function song_in_mix(song_name) {
+    return mix_data.has(song_name)
 }
  
 function pretty_print_song_list(highlight_last=false) {
-    let result = ""
+    let result = "__Mix Seed Songs__"
     let i = 1
     let mark = "\n"
     
-    song_list.forEach(song => {
-        result += `${mark}\t **#${i}** *${song.track}*\t${song.year}\t${song.artist}`
+    mix_data.forEach(song => {
+        result += `${mark}\t **#${i}** \t *${song.track}* \t ${song.artist}`
         i += 1
     })
 
     return result
 }
 
-function get_song_list() {
-    return song_list
-}
-
 function reset_song_list() {
-    song_list = []
+    mix_data.clear()
     console.log("MIX: Song list reset")
     return
 }
 
-function add_song(options) {
-    console.log("MIX:", options)
-    song_list.push(options)
-    return true
+async function add_song(options) {
+    console.log("MIX NEW SONG:", options)
+    mix_data.set(options.track, options)
+    return
 }
 
 function export_to_string(arr) {
@@ -64,9 +80,9 @@ function export_to_string(arr) {
     return str
 }
 
-function call_python_recommender(song_obj_array) {
+function call_python_recommender() {
     return new Promise(function(resolve, reject) {
-        const input = "'" + export_to_string(song_obj_array) + "'"
+        const input = "'" + export_to_string(mix_data) + "'"
         console.log("input", input)
         let options = {
             mode: 'text',
@@ -78,7 +94,7 @@ function call_python_recommender(song_obj_array) {
             if (Array.isArray(results) === true) {
                 try{
                     const recommendations = JSON.parse(results[0])
-                    //console.log(">", recommendations)
+                    console.log(">", recommendations)
                     return resolve(recommendations)
                 } catch(e){
                     console.log(e)
@@ -91,11 +107,12 @@ function call_python_recommender(song_obj_array) {
 }
 
 module.exports = {
+    parse_from_yt,
     call_python_recommender,
     search_yt,
-    get_song_list,
+    get_mix_size,
     reset_song_list,
-    already_in_song_list,
+    song_in_mix,
     pretty_print_song_list,
     add_song
 }

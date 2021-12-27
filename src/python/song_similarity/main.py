@@ -18,8 +18,6 @@ from spotipy.oauth2 import SpotifyClientCredentials
 song_cluster_pipeline = joblib.load('/app/src/python/song_similarity/song_cluster_pipeline.pkl')
 spotify_data = pd.read_csv('/app/src/python/song_similarity/data/data.csv')
 
-number_cols = ['valence', 'year', 'acousticness', 'danceability', 'duration_ms', 'energy', 'explicit', 'instrumentalness', 'key', 'liveness', 'loudness', 'mode', 'popularity', 'speechiness', 'tempo']
-
 use_spotify = False
 
 if os.environ.get('SPOTIFY_CLIENT') is not None and os.environ.get('SPOTIFY_SECRET') is not None:
@@ -29,6 +27,7 @@ sp = False
 if (use_spotify == True):
     sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=os.environ['SPOTIFY_CLIENT'], client_secret=os.environ['SPOTIFY_SECRET']))
     
+number_cols = ['valence', 'year', 'acousticness', 'danceability', 'duration_ms', 'energy', 'explicit', 'instrumentalness', 'key', 'liveness', 'loudness', 'mode', 'popularity', 'speechiness', 'tempo']
 
 def find_song(track):
     song_data = defaultdict()

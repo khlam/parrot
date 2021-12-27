@@ -10,6 +10,9 @@ let disable_tts_all = false
 let disable_tts_da = false
 let disable_tts_mr = false
 
+let last_interaction = null
+
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 if ('DISABLE_TTS_ALL' in process.env) {
     disable_tts_all = true
@@ -105,49 +108,31 @@ client.once('ready', () => {
         })
 
         commands?.create({
-            name: 'mix',
-            description: 'Dynamic music recommendation algo based on up to 10 songs.',
+            name: "mix",
+            description: "Dynamic music recommendation given a list of songs.",
             options: [
                 {
-                    name: 'action',
-                    description: 'Action select',
-                    required: true,
-                    choices: [
+                    name: "add",
+                    description: "YouTube URL. Must be a music video.",
+                    type: 1,
+                    options: [
                         {
-                            name: "add song",
-                            description: 'Add song to list of seed songs.',
-                            value: 0
+                            name: "url",
+                            description: "YouTube URL. Must be a music video.",
+                            type: Constants.ApplicationCommandOptionTypes.STRING,
+                            required: true
                         },
-                        {
-                            name: "start",
-                            description: 'Start the mix with the given seed songs.',
-                            value: 1
-                        },
-                        {
-                            name: "reset",
-                            description: 'Clear and reset mix.',
-                            value: 2
-                        }
-                    ],
-                    type: Constants.ApplicationCommandOptionTypes.NUMBER
+                    ]
                 },
                 {
-                    name: 'name',
-                    description: 'Song Name',
-                    required: false,
-                    type: Constants.ApplicationCommandOptionTypes.STRING
+                    name: "start",
+                    description: "Start the mix with the given seed songs.",
+                    type: 1
                 },
                 {
-                    name: 'artist',
-                    description: 'Song Artist',
-                    required: false,
-                    type: Constants.ApplicationCommandOptionTypes.STRING
-                },
-                {
-                    name: 'year',
-                    description: 'Song Year',
-                    required: false,
-                    type: Constants.ApplicationCommandOptionTypes.NUMBER
+                    name: "reset",
+                    description: "Clear and reset seed song list.",
+                    type: 1
                 }
             ]
         })
@@ -206,9 +191,7 @@ client.on('interactionCreate', async (interaction) => {
     }
     
     else if (commandName === "leave") {
-        try{
-            r.reset_song_list()
-            
+        try {
             const _r = await music.stop({
                 interaction: interaction
             })
@@ -301,78 +284,65 @@ client.on('interactionCreate', async (interaction) => {
         }
     }
     else if (commandName === "mix") {
-        const action = options.getNumber('action')
-        let name = null
-        let year = null
-        let artist = null
-        if (action === 0) { // add song to seed list
-            try {
-                name = options.getString('name')
-            }catch(e){}
-            
-            try {
-                year = options.getNumber('year')
-            }catch(e){}
-            
-            try {
-                artist = options.getString('artist')
-            }catch(e){}
+        if (interaction.options.getSubcommand() === "add") { // add song to seed list
 
-            console.log("mix: name", name)
-            console.log("mix: artist", artist)
-            if (name !== null || artist !== null) {
-                if (r.already_in_song_list(name) === false) {
-                    if (true) { // if song name and year are found in database or was successfully added to database respond with 200
-                        
-                        r.add_song({
-                            track: name,
-                            year: year,
-                            artist: artist
+            const url = options.getString('url')
+
+            console.log("mix: url", url)
+
+            if (url !== null) {
+                const _res = await r.parse_from_yt(url)
+
+                if (_res === false) {
+                    await interaction.reply({
+                        content:`ERROR: Could not parse song or artist info from URL.`,
+                        ephemeral: true
+                    })
+                    return
+                }else {
+                    if (r.song_in_mix(_res.track) === false) {
+                        await r.add_song({
+                            track: _res.track,
+                            artist: _res.artist
                         })
-    
                         await interaction.reply({
-                            content:`Added Song.\nSeed List:\n${r.pretty_print_song_list(true)}`,
+                            content:`${r.pretty_print_song_list(true)}`,
                             ephemeral: false
                         })
-                        
                         return
-                    }else { // if song name was not found in database and could not be added respond with 404
+                    }else {
                         await interaction.reply({
-                            content:`ERROR: Could not find a song with name \`${name}\` released \`${year}\` in Spotify's database.`,
+                            content:`Song \`${_res.track}\` already in list.`,
                             ephemeral: true
                         })
                         return
                     }
-                }else {
-                    await interaction.reply({
-                        content:`Song \`${name}\` (${year}) already in list.`,
-                        ephemeral: true
-                    })
-                    return
                 }
             }else {
                 await interaction.reply({
-                    content:`ERROR: Missing song name or artist.`,
+                    content:`ERROR: Missing song youtube url.`,
                     ephemeral: true
                 })
+                return
             }            
         }
 
-        else if (action === 1) { // start the mix
+        else if (interaction.options.getSubcommand() === "start") { // start the mix
             console.log("MIX: Starting mix...")
             
-            if (r.get_song_list().length >= 1) { // start mix if there is atleast 1 seed song
+            if (r.get_mix_size() >= 1) { // start mix if there is atleast 1 seed song
                 await interaction.reply({
-                    content:`Starting Mix with the following seed songs \n ${r.pretty_print_song_list(true)}`,
+                    content:`> Starting Mix with the following seed songs ${r.pretty_print_song_list(true)}`,
                     ephemeral: false
                 })
 
-                let song_list = await r.call_python_recommender(r.get_song_list())
+                let song_list = await r.call_python_recommender()
                 
                 if (song_list !== false) {
                     for (const song of song_list) {
+                        started_adding_mix = true
                         let _song_url = await r.search_yt(song)
-    
+
                         if (_song_url !== false) {
                             let _ytObj = await yt.get_youtube_obj(_song_url)
                             if (_ytObj !== false) {
@@ -396,7 +366,9 @@ client.on('interactionCreate', async (interaction) => {
                             }
                         }
                     }
+                    last_interaction = null
                     r.reset_song_list() // reset mix seed list
+                    return
                 }else {
                     await interaction.channel.send({ // tell user seed list is empty
                         content:`ERROR: Insufficient seed songs, please try again.`,
@@ -411,7 +383,7 @@ client.on('interactionCreate', async (interaction) => {
             }
         }
 
-        else if (action === 2) { // reset mix seed list
+        else if (interaction.options.getSubcommand() === "reset") { // reset mix seed list
             r.reset_song_list()
             await interaction.reply({
                 content:`Mix seed song list reset.`,
