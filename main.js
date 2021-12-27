@@ -191,9 +191,7 @@ client.on('interactionCreate', async (interaction) => {
     }
     
     else if (commandName === "leave") {
-        try{
-            r.reset_song_list()
-            
+        try {
             const _r = await music.stop({
                 interaction: interaction
             })
