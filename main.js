@@ -106,28 +106,6 @@ client.once('ready', () => {
                 }
             ]
         })
-        /*
-        commands?.create({
-            name: 'mix',
-            description: 'Dynamic music recommendation given a list of songs.',
-            options: [
-                {
-                    name: "url",
-                    description: 'YouTube URL. Must be a music video.',
-                    type: Constants.ApplicationCommandOptionTypes.STRING
-                },
-                {
-                    name: "start",
-                    description: 'Start the mix with the given seed songs.',
-                    type: 2,
-                },
-                {
-                    name: "reset",
-                    description: 'Clear and reset seed song list.',
-                    type: 2,
-                }
-            ]
-        })*/
 
         commands?.create({
             name: "mix",
@@ -362,45 +340,32 @@ client.on('interactionCreate', async (interaction) => {
 
                 let song_list = await r.call_python_recommender()
                 
-                let started_adding_mix = false
-                last_interaction = Object.assign({}, interaction)
-
                 if (song_list !== false) {
                     for (const song of song_list) {
-                        if ((music.isConnected({interaction: last_interaction}) === true) || (started_adding_mix === false)) {
-                            started_adding_mix = true
-                            let _song_url = await r.search_yt(song)
-    
-                            if (_song_url !== false) {
-                                let _ytObj = await yt.get_youtube_obj(_song_url)
-                                if (_ytObj !== false) {
-                                    try {
-                        
-                                        let play_result =  await music.play({
-                                            interaction: interaction,
-                                            channel: interaction.member.voice.channel,
-                                            songObj: _ytObj,
+                        started_adding_mix = true
+                        let _song_url = await r.search_yt(song)
+
+                        if (_song_url !== false) {
+                            let _ytObj = await yt.get_youtube_obj(_song_url)
+                            if (_ytObj !== false) {
+                                try {
+                    
+                                    let play_result =  await music.play({
+                                        interaction: interaction,
+                                        channel: interaction.member.voice.channel,
+                                        songObj: _ytObj,
+                                    })
+                            
+                                    if (play_result.err === null) {
+                                        await interaction.channel.send({
+                                            content: `**#${play_result.queue_len}** \t *${_ytObj.name}*\t \`${_ytObj.length}\` \t [Link (YouTube) 🔗](${_ytObj.address})`
                                         })
-                                
-                                        if (play_result.err === null) {
-                                            await interaction.channel.send({
-                                                content: `**#${play_result.queue_len}** \t *${_ytObj.name}*\t \`${_ytObj.length}\` \t [Link (YouTube) 🔗](${_ytObj.address})`
-                                            })
-                                        }
-        
-                                    } catch(e) {
-                                        console.log(e)
                                     }
+    
+                                } catch(e) {
+                                    console.log(e)
                                 }
                             }
-                        }else {
-                            r.reset_song_list()
-                            await interaction.channel.send({ // tell user seed list is empty
-                                content:`ERROR: Not connected to voice channel. Clearing mix.`,
-                                ephemeral: false
-                            })
-                            last_interaction = null
-                            return
                         }
                     }
                     last_interaction = null
