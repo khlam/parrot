@@ -10,6 +10,9 @@ let disable_tts_all = false
 let disable_tts_da = false
 let disable_tts_mr = false
 
+let last_interaction = null
+
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 if ('DISABLE_TTS_ALL' in process.env) {
     disable_tts_all = true
@@ -130,6 +133,12 @@ client.once('ready', () => {
                         }
                     ],
                     type: Constants.ApplicationCommandOptionTypes.NUMBER
+                },
+                {
+                    name: 'url',
+                    description: 'LINK MUST BE A YOUTUBE MUSIC VIDEO. Bot will try to parse song and artist name(s).',
+                    required: false,
+                    type: Constants.ApplicationCommandOptionTypes.STRING
                 },
                 {
                     name: 'name',
@@ -305,6 +314,7 @@ client.on('interactionCreate', async (interaction) => {
         let name = null
         let year = null
         let artist = null
+        let url = null
         if (action === 0) { // add song to seed list
             try {
                 name = options.getString('name')
@@ -318,20 +328,58 @@ client.on('interactionCreate', async (interaction) => {
                 artist = options.getString('artist')
             }catch(e){}
 
+            try{
+                url = options.getString('url')
+            }catch(e){}
+
             console.log("mix: name", name)
             console.log("mix: artist", artist)
-            if (name !== null || artist !== null) {
-                if (r.already_in_song_list(name) === false) {
+            console.log("mix: url", url)
+
+            if (name !== null || artist !== null || url !== null) {
+                if (url !== null) {
+                    const _res = await r.parse_from_yt(url)
+
+                    if (_res === false) {
+                        await interaction.reply({
+                            content:`ERROR: Could not parse song or artist info from URL.`,
+                            ephemeral: true
+                        })
+                        return
+                    }else {
+                        if (r.song_in_mix(_res.track) === false) {
+                            await r.add_song({
+                                track: _res.track,
+                                year: null,
+                                artist: _res.artist
+                            })
+                            await interaction.reply({
+                                content:`${r.pretty_print_song_list(true)}`,
+                                ephemeral: false
+                            })
+                            return
+                        }else {
+                            await interaction.reply({
+                                content:`Song \`${_res.track}\` already in list.`,
+                                ephemeral: true
+                            })
+                            return
+                        }
+                    }
+                    return
+                }
+
+                if ((name !== null) && (r.song_in_mix(name) === false)) {
                     if (true) { // if song name and year are found in database or was successfully added to database respond with 200
                         
-                        r.add_song({
+                        await r.add_song({
                             track: name,
                             year: year,
                             artist: artist
                         })
     
                         await interaction.reply({
-                            content:`Added Song.\nSeed List:\n${r.pretty_print_song_list(true)}`,
+                            content:`${r.pretty_print_song_list(true)}`,
                             ephemeral: false
                         })
                         
@@ -352,51 +400,68 @@ client.on('interactionCreate', async (interaction) => {
                 }
             }else {
                 await interaction.reply({
-                    content:`ERROR: Missing song name or artist.`,
+                    content:`ERROR: Missing song url or name or artist.`,
                     ephemeral: true
                 })
+                return
             }            
         }
 
         else if (action === 1) { // start the mix
             console.log("MIX: Starting mix...")
             
-            if (r.get_song_list().length >= 1) { // start mix if there is atleast 1 seed song
+            if (r.get_mix_size() >= 1) { // start mix if there is atleast 1 seed song
                 await interaction.reply({
-                    content:`Starting Mix with the following seed songs \n ${r.pretty_print_song_list(true)}`,
+                    content:`> Starting Mix with the following seed songs ${r.pretty_print_song_list(true)}`,
                     ephemeral: false
                 })
 
-                let song_list = await r.call_python_recommender(r.get_song_list())
+                let song_list = await r.call_python_recommender()
                 
+                let started_adding_mix = false
+                last_interaction = Object.assign({}, interaction)
+
                 if (song_list !== false) {
                     for (const song of song_list) {
-                        let _song_url = await r.search_yt(song)
+                        if ((music.isConnected({interaction: last_interaction}) === true) || (started_adding_mix === false)) {
+                            started_adding_mix = true
+                            let _song_url = await r.search_yt(song)
     
-                        if (_song_url !== false) {
-                            let _ytObj = await yt.get_youtube_obj(_song_url)
-                            if (_ytObj !== false) {
-                                try {
-                    
-                                    let play_result =  await music.play({
-                                        interaction: interaction,
-                                        channel: interaction.member.voice.channel,
-                                        songObj: _ytObj,
-                                    })
-                            
-                                    if (play_result.err === null) {
-                                        await interaction.channel.send({
-                                            content: `**#${play_result.queue_len}** \t *${_ytObj.name}*\t \`${_ytObj.length}\` \t [Link (YouTube) 🔗](${_ytObj.address})`
+                            if (_song_url !== false) {
+                                let _ytObj = await yt.get_youtube_obj(_song_url)
+                                if (_ytObj !== false) {
+                                    try {
+                        
+                                        let play_result =  await music.play({
+                                            interaction: interaction,
+                                            channel: interaction.member.voice.channel,
+                                            songObj: _ytObj,
                                         })
+                                
+                                        if (play_result.err === null) {
+                                            await interaction.channel.send({
+                                                content: `**#${play_result.queue_len}** \t *${_ytObj.name}*\t \`${_ytObj.length}\` \t [Link (YouTube) 🔗](${_ytObj.address})`
+                                            })
+                                        }
+        
+                                    } catch(e) {
+                                        console.log(e)
                                     }
-    
-                                } catch(e) {
-                                    console.log(e)
                                 }
                             }
+                        }else {
+                            r.reset_song_list()
+                            await interaction.channel.send({ // tell user seed list is empty
+                                content:`ERROR: Not connected to voice channel. Clearing mix.`,
+                                ephemeral: false
+                            })
+                            last_interaction = null
+                            return
                         }
                     }
+                    last_interaction = null
                     r.reset_song_list() // reset mix seed list
+                    return
                 }else {
                     await interaction.channel.send({ // tell user seed list is empty
                         content:`ERROR: Insufficient seed songs, please try again.`,

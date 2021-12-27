@@ -76,12 +76,17 @@ exports.isConnected = async (options = {}) => {
 
     const { interaction } = options;
     if(!interaction) throw new Error(`INVALID_INTERACTION: There is no valid CommandInteraction provided.`)
+    try{
+        const fetchedData = activeSongs.get(interaction.guild.id);
 
-    const fetchedData = activeSongs.get(interaction.guild.id);
-
-    if(!fetchedData?.connection && !fetchedData?.player) return Boolean(false)
-    else return Boolean(true)
-
+        if(!fetchedData?.connection && !fetchedData?.player) {
+            return Boolean(false)
+        }else {
+            return Boolean(true)
+        }
+    }catch(e){
+        return false
+    }
 };
 
 exports.stop = async (options = {}) => {
