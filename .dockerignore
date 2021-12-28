@@ -1,0 +1,13 @@
+node_modules/
+models/
+doc/
+.git/
+.github/
+.env
+*.md
+__pycache__/
+*.pth.tar
+David_Attenborough.pt
+hifigan_vocoder
+MichaelRosen
+.cache

@@ -1,0 +1,25 @@
+version: "3.3"
+
+services:
+  bot:
+    container_name: parrot
+    build:
+        context: .
+        target: dev
+    volumes:
+      - .:/app/
+      - /app/node_modules
+      - /app/src/python/fastspeech2/output/ckpt/LJSpeech
+      - /app/src/python/fastspeech2/hifigan
+      - /app/src/python/tactron2/res
+      - /app/src/python/song_similarity/data
+      #- ./output/:/tmp/
+    environment:
+        TOKEN: ${TOKEN}
+        SPOTIFY_CLIENT: ${SPOTIFY_CLIENT}
+        SPOTIFY_SECRET: ${SPOTIFY_SECRET}
+        #DISABLE_TTS_ALL: true
+        #DISABLE_TTS_DA: true
+        #DISABLE_TTS_MR: true
+    #command: bash -c "python3 /app/src/python/fastspeech2/main.py"
+    #command: bash -c "nodemon -L main.js"

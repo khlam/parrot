@@ -1,0 +1,8 @@
+pydub==0.24.1
+librosa==0.6.0
+inflect==0.2.5
+omegaconf==2.0.6
+numba==0.47
+llvmlite==0.32.1
+pysrt==1.1.2
+nltk==3.6.2

@@ -1,0 +1,11 @@
+version: "3.3"
+
+services:
+  bot:
+    container_name: tc2
+    build:
+        context: .
+    volumes:
+      - .:/app/
+      - ./output/:/app/output/
+    command: bash -c "python3 main.py"
