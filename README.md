@@ -1,5 +1,5 @@
 # parrot
-> A minimal privacy-focused Discord Music Bot
+> A minimal Discord Music Bot featuring similarity-based music playlist generation and voice clone text-to-speech.
 
 ### Features
 1) Play Music from Youtube
