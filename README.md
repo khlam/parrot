@@ -7,7 +7,7 @@
 3) TTS via voice clones of David Attenborough, Michael Rosen and LJ Speech (FastSpeech2 voice synthesis) [YouTube Demo](https://www.youtube.com/watch?v=YSc2GxM-1nU)
 
 ## Setup
-For creating secrets, see [CREATING_DEPLOYMENT_SECRETS.md](./doc/CREATING_DEPLOYMENT_SECRETS.md)
+See [CREATING_DEPLOYMENT_SECRETS.md](./doc/CREATING_DEPLOYMENT_SECRETS.md) for the secrets needed to run the bot.
 
 ### Docker-compose
 Command `docker-compose up` is for development or quick launch ([Docker-compose docs](https://docs.docker.com/compose/)).

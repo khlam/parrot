@@ -14,6 +14,7 @@ For this document, the word __"server" is used interchangeably with "Discord Gui
 
 3. (Optional) The third section shows where to find Spotify Developer secrets so the bot can look up song meta data for the playlist-similarity feature.
 
+
 ## 1. Register bot with Discord and join it to your server.
 Registering the bot with Discord sort of "creates an account" for your bot so you can join it to your Discord server. 
 
@@ -46,10 +47,23 @@ The discord bot token is used to authenticate the bot with Discord's services.
 Anyone who gets this token can authenticate and act as your bot on whatever server your bot is joined to.
 
 1. Click on "Bot" from the left menu, the bot's secret token is here.
+
+
 ![1.bot.token.is.here.png](./img/2/1.bot.token.is.here.png)
 
 
 
-## 3. Spotify Secrets
-The Spotify secrets enable the bot to look up song meta data for playlist generation.
-If secrets are not provided, the bot won't make lookup calls to Spotify's databases and will only use whatever is in its local DB.
+## 3. Spotify Secrets (Optional)
+Spotify secrets enable the bot to look up song meta data for playlist generation.
+If secrets are not provided, the bot won't make lookup calls to Spotify's databases for similarity-playlists and will only use its local DB.
+
+1. Sign into Spotify Developer [developer.spotify.com](https://developer.spotify.com/dashboard/applications) and create a new app, give it a name and description. I'll call mine example but you can name it whatever you want.
+
+
+![1.create.spotify.app.png](./img/3/1.create.spotify.app.png)
+
+
+2. Click on the app you created. Your SPOTIFY_CLIENT and SPOTIFY_SECRET are found on this page.
+
+
+![2.spotify.secrets.png](./img/3/2.spotify.secrets.png)
