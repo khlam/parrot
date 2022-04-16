@@ -2,15 +2,15 @@ FROM python:3.8-slim-buster AS base
 
 RUN apt-get update && apt-get install -y curl build-essential ffmpeg 
 
-RUN curl "https://nodejs.org/dist/latest-v17.x/node-v17.3.0-linux-x64.tar.xz" -O \
-    && tar -xf "node-v17.3.0-linux-x64.tar.xz" \
-    && ln -s "/node-v17.3.0-linux-x64/bin/node" /usr/local/bin/node \
-    && ln -s "/node-v17.3.0-linux-x64/bin/npm" /usr/local/bin/npm \
-    && ln -s "/node-v17.3.0-linux-x64/bin/npx" /usr/local/bin/npx \
+RUN curl -L -o "node-v16.14.2-linux-x64.tar.xz" "https://github.com/khlam/parrot/releases/download/node-v16.14.2-linux-x64.tar.xz/node-v16.14.2-linux-x64.tar.xz" \
+    && tar -xf "node-v16.14.2-linux-x64.tar.xz" \
+    && ln -s "/node-v16.14.2-linux-x64/bin/node" /usr/local/bin/node \
+    && ln -s "/node-v16.14.2-linux-x64/bin/npm" /usr/local/bin/npm \
+    && ln -s "/node-v16.14.2-linux-x64/bin/npx" /usr/local/bin/npx \
     # clear
     && npm cache clean --force \
     && rm -rf /var/lib/apt/lists/* \
-    && rm -f "/node-v17.3.0-linux-x64.tar.xz" \
+    && rm -f "/node-v16.14.2-linux-x64.tar.xz" \
     && apt-get clean \
     && apt-get autoremove
 
@@ -41,7 +41,7 @@ RUN  apt-get clean && \
 
 FROM base AS dev
 RUN npm install --global nodemon
-CMD /node-v17.3.0-linux-x64/lib/node_modules/nodemon/bin/nodemon.js -L main.js
+CMD /node-v16.14.2-linux-x64/lib/node_modules/nodemon/bin/nodemon.js -L main.js
 
 FROM base
 CMD node main.js
